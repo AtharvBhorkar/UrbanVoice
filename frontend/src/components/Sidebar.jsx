@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Home, Clapperboard, Compass, Trophy, MessageSquarePlus, PlusSquare,
+  Home, Clapperboard, Trophy, MessageSquarePlus, PlusSquare,
   Search, MessageCircle, Bell, User, FileText, Award, Bookmark,
   Settings, HelpCircle, Info, Sun, Moon, LogOut, Menu,
 } from 'lucide-react';
@@ -11,7 +11,6 @@ import logo from '../assets/logo.png';
 const NAV_ITEMS = [
   { icon: Home, label: 'Home Feed', to: '/feed' },
   { icon: Clapperboard, label: 'Reels', to: '/reels' },
-  { icon: Compass, label: 'Explore', to: '/explore' },
   { icon: Search, label: 'Search', to: '/search' },
   { icon: MessageCircle, label: 'Messages', to: '/messages', badge: 3 },
   { icon: PlusSquare, label: 'Create', to: '/create' },

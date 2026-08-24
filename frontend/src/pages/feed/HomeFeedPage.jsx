@@ -121,7 +121,6 @@ function FeedCard({ item }) {
 
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900 overflow-hidden">
-      {/* header */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">
@@ -146,7 +145,6 @@ function FeedCard({ item }) {
         <MoreHorizontal size={18} className="text-text-dark-muted" />
       </div>
 
-      {/* media */}
       <div className={`relative aspect-square ${item.image || item.video ? 'bg-ink-800' : `bg-gradient-to-br ${item.tone}`} flex items-center justify-center overflow-hidden`}>
         {item.video ? (
           <video
@@ -192,7 +190,6 @@ function FeedCard({ item }) {
         )}
       </div>
 
-      {/* actions */}
       <div className="flex items-center justify-between px-4 pt-3">
         <div className="flex items-center gap-4">
           <button onClick={() => setLiked((v) => !v)}>
@@ -209,7 +206,6 @@ function FeedCard({ item }) {
         </button>
       </div>
 
-      {/* likes + caption */}
       <div className="px-4 pt-2 pb-4">
         <p className="text-[13.5px] font-semibold font-body text-text-dark">
           {liked ? item.likes + 1 : item.likes} likes
@@ -231,16 +227,13 @@ export default function HomeFeedPage() {
     <div className="min-h-screen ml-[76px] bg-ink-950">
       <div className="max-w-[1100px] mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
 
-        {/* ===== Main column ===== */}
         <div>
-          {/* Stories bar */}
           <div className="flex items-start gap-4 overflow-x-auto pb-5 mb-2 scrollbar-hide">
             {STORIES.map((s, i) => (
               <StoryRing key={i} {...s} />
             ))}
           </div>
 
-          {/* Feed */}
           <div className="flex flex-col gap-6 max-w-[500px] mx-auto lg:mx-0">
             {FEED_ITEMS.map((item, i) => (
               <motion.div
@@ -255,7 +248,6 @@ export default function HomeFeedPage() {
           </div>
         </div>
 
-        {/* ===== Right sidebar ===== */}
         <div className="hidden lg:block pt-2 sticky top-6 self-start h-fit">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-11 h-11 rounded-full bg-volt/20 border border-volt/40 flex items-center justify-center">

@@ -7,8 +7,8 @@ import logo from '../assets/logo.png';
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
   { label: 'About', to: '/about' },
-  { label: 'Explore', to: '/explore' },
-  { label: 'Leaderboard', to: '/leaderboard' },
+  { label: 'Explore', to: '/feed' },
+  { label: 'Community', to: '/community-impact' },
 ];
 
 function PulseUnderline() {

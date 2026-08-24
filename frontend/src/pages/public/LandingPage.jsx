@@ -530,13 +530,17 @@ export default function LandingPage() {
             <Section className="py-6 md:py-8 bg-navy">
                 <motion.div
                     initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.5 }} variants={fadeUp}
-                    className="rounded-[24px] bg-[#f5f3cd] px-6 py-7 md:px-10 md:py-9 text-center relative overflow-hidden"
-                    style={{
-                        backgroundImage: "url('https://i.ibb.co/mCHTFFPL/cta-banner-without-white-bg.png')",
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
+                    className="group rounded-[24px] bg-[#f5f3cd] px-6 py-7 md:px-10 md:py-9 text-center relative overflow-hidden"
                 >
+                    <div
+                        className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-110"
+                        style={{
+                            backgroundImage: "url('https://i.ibb.co/mCHTFFPL/cta-banner-without-white-bg.png')",
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                        }}
+                    />
+
                     <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-orange-300/30 blur-3xl pointer-events-none" />
                     <div className="absolute -bottom-20 -right-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none" />
 
