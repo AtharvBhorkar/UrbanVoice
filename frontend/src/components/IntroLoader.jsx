@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
-const TEXT = "UrbanVoice";
-
-const IntroLoader = () => {
+const IntroLoader = ({ title = "UrbanVoice", subtitle = "Your voice, your city, your change" }) => {
+  const TEXT = title;
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -84,7 +83,7 @@ const IntroLoader = () => {
           transition={{ duration: 0.5, delay: TEXT.length * 0.12 + 0.4 }}
           className="text-neutral-400 text-xs sm:text-sm tracking-[0.2em] uppercase"
         >
-          Your voice, your city, your change
+          {subtitle}
         </motion.p>
       </div>
     </motion.div>

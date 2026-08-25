@@ -673,6 +673,159 @@ export default function CommunityImpactPage() {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {selectedWard && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedWard(null)}
+            className="fixed inset-0 z-[100] bg-ink-950/80 backdrop-blur-sm flex items-center justify-center p-5"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.97 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-lg rounded-3xl bg-navy border border-volt/15 overflow-hidden max-h-[85vh] flex flex-col"
+            >
+              <button
+                onClick={() => setSelectedWard(null)}
+                aria-label="Close"
+                className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-ink-950/50 text-volt flex items-center justify-center hover:bg-ink-950 transition-colors"
+              >
+                <X size={16} />
+              </button>
+
+              <div className="h-40 relative shrink-0">
+                <img
+                  src={selectedWard.illustration}
+                  alt={selectedWard.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent" />
+              </div>
+
+              <div className="px-6 md:px-8 pb-8 -mt-8 relative overflow-y-auto no-scrollbar">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-volt/10 mb-3">
+                  <p className="font-body text-[12px] text-volt">{selectedWard.status}</p>
+                  {selectedWard.squiggle && <Squiggle className="text-volt/70" />}
+                </div>
+
+                <h3 className="font-display font-bold text-[24px] text-white">{selectedWard.name}</h3>
+
+                <div className="flex items-center gap-6 mt-5">
+                  <ProgressRing
+                    resolved={selectedWard.resolved}
+                    total={selectedWard.total}
+                    pct={Math.round((selectedWard.resolved / selectedWard.total) * 100)}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 text-volt/60 font-body text-[13px] mb-1.5">
+                      <Building2 size={13} />
+                      Civic &amp; society issues
+                    </div>
+                    <p className="font-body text-[14px] text-volt/70 leading-relaxed">
+                      {selectedWard.resolved} out of {selectedWard.total} reported issues have
+                      been resolved in this neighbourhood so far.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative h-[3px] rounded-full bg-white/10 overflow-hidden mt-6">
+                  <div
+                    style={{ width: `${Math.round((selectedWard.resolved / selectedWard.total) * 100)}%` }}
+                    className="h-full rounded-full bg-gradient-to-r from-signal to-volt"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 mt-6">
+                  <div className="rounded-xl bg-white/[0.04] border border-white/10 px-3 py-3 text-center">
+                    <p className="font-display font-bold text-[17px] text-volt flex items-center justify-center gap-1">
+                      <TrendingUp size={13} className="text-signal" />
+                      +{selectedWard.trend}%
+                    </p>
+                    <p className="font-body text-[10.5px] text-volt/50 mt-1">This month</p>
+                  </div>
+                  <div className="rounded-xl bg-white/[0.04] border border-white/10 px-3 py-3 text-center">
+                    <p className="font-display font-bold text-[17px] text-volt">{selectedWard.avgTime}</p>
+                    <p className="font-body text-[10.5px] text-volt/50 mt-1">Avg. resolution</p>
+                  </div>
+                  <div className="rounded-xl bg-white/[0.04] border border-white/10 px-3 py-3 text-center">
+                    <p className="font-display font-bold text-[13px] text-volt truncate">{selectedWard.topReporter}</p>
+                    <p className="font-body text-[10.5px] text-volt/50 mt-1">Top reporter</p>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <p className="font-body text-[12px] font-semibold text-volt/50 uppercase tracking-wide mb-2.5">
+                    Issue breakdown
+                  </p>
+                  <div className="flex h-2 rounded-full overflow-hidden">
+                    <div
+                      style={{ width: `${(selectedWard.civicCount / (selectedWard.civicCount + selectedWard.societyCount)) * 100}%` }}
+                      className="bg-signal"
+                    />
+                    <div
+                      style={{ width: `${(selectedWard.societyCount / (selectedWard.civicCount + selectedWard.societyCount)) * 100}%` }}
+                      className="bg-volt"
+                    />
+                  </div>
+                  <div className="flex items-center gap-4 mt-2.5">
+                    <span className="flex items-center gap-1.5 text-[12px] font-body text-volt/60">
+                      <span className="w-2 h-2 rounded-full bg-signal" />
+                      Civic ({selectedWard.civicCount})
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[12px] font-body text-volt/60">
+                      <span className="w-2 h-2 rounded-full bg-volt" />
+                      Society ({selectedWard.societyCount})
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <p className="font-body text-[12px] font-semibold text-volt/50 uppercase tracking-wide mb-2.5">
+                    Recent issues
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {selectedWard.recentIssues.map((issue, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {issue.category === 'Civic'
+                            ? <Building2 size={13} className="text-signal shrink-0" />
+                            : <MapPin size={13} className="text-volt shrink-0" />}
+                          <p className="font-body text-[13px] text-white truncate">{issue.title}</p>
+                        </div>
+                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-semibold font-body ${
+                          issue.status === 'Resolved'
+                            ? 'bg-emerald-500/15 text-emerald-400'
+                            : issue.status === 'In progress'
+                              ? 'bg-signal/15 text-signal'
+                              : 'bg-white/10 text-volt/60'
+                        }`}>
+                          {issue.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Link
+                  to="/create"
+                  className="block w-full mt-6 py-3 rounded-full bg-volt text-navy font-semibold font-body text-center hover:-translate-y-0.5 transition-transform"
+                >
+                  Post your area's issue as a Reel
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Section className="py-6 md:py-8 bg-navy">
         <motion.div
           initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.5 }} variants={fadeUp}

@@ -2,10 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Home, Clapperboard, Trophy, MessageSquarePlus, PlusSquare,
-  Search, MessageCircle, Bell, User, FileText, Award, Bookmark,
-  Settings, HelpCircle, Info, Sun, Moon, LogOut, Menu,
-} from 'lucide-react';
+  Home, Clapperboard, Trophy, PlusSquare,
+  Search, MessageCircle, Bell, User, Award,
+  Settings, HelpCircle, LogOut, Menu,} from 'lucide-react';
 import logo from '../assets/logo.png';
 
 const NAV_ITEMS = [
@@ -19,23 +18,23 @@ const NAV_ITEMS = [
 
 const PROFILE_MENU = [
   { icon: User, label: 'My Profile', to: '/profile' },
-  { icon: FileText, label: 'My Complaints', to: '/my-complaints' },
   { icon: Award, label: 'My Badges', to: '/my-badges' },
-  { icon: Bookmark, label: 'Saved Issues', to: '/saved-issues' },
 ];
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [isDark, setIsDark] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
   const profileRef = useRef(null);
   const moreRef = useRef(null);
+  const createRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
       if (moreRef.current && !moreRef.current.contains(e.target)) setMoreOpen(false);
+      if (createRef.current && !createRef.current.contains(e.target)) setCreateOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -44,10 +43,10 @@ export default function Sidebar() {
   return (
     <motion.aside
       onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => { setExpanded(false); setProfileOpen(false); setMoreOpen(false); }}
+      onMouseLeave={() => { setExpanded(false); setProfileOpen(false); setMoreOpen(false); setCreateOpen(false); }}
       animate={{ width: expanded ? 240 : 76 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="fixed left-0 top-0 bottom-0 z-40 bg-ink-950 border-r border-ink-800 flex flex-col justify-between py-6 overflow-hidden"
+      className="fixed left-0 top-0 bottom-0 z-40 bg-ink-950 border-r border-ink-800 flex flex-col justify-between py-6 overflow-visible"
     >
       <div>
         <NavLink to="/" className="flex items-center gap-3.5 px-[22px] mb-8">
@@ -62,49 +61,89 @@ export default function Sidebar() {
         </NavLink>
 
         <nav className="flex flex-col gap-1 px-3">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-4 px-3 py-3 rounded-xl transition-colors whitespace-nowrap relative ${
-                  isActive
-                    ? 'bg-ink-800 text-text-dark'
-                    : 'text-text-dark-muted hover:bg-ink-900 hover:text-text-dark'
-                }`
-              }
-            >
-              <span className="relative shrink-0">
-                <item.icon size={22} strokeWidth={2} />
-                {item.badge && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-signal text-[10px] font-bold text-white flex items-center justify-center">
-                    {item.badge}
+          {NAV_ITEMS.map((item) =>
+            item.label === 'Create' ? (
+              <div className="relative" ref={createRef} key={item.to}>
+                <button
+                  onClick={() => { setCreateOpen((v) => !v); setProfileOpen(false); setMoreOpen(false); }}
+                  className={`w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-colors whitespace-nowrap relative ${
+                    createOpen
+                      ? 'bg-ink-800 text-text-dark'
+                      : 'text-text-dark-muted hover:bg-ink-900 hover:text-text-dark'
+                  }`}
+                >
+                  <span className="relative shrink-0">
+                    <item.icon size={22} strokeWidth={2} />
                   </span>
-                )}
-              </span>
-              <span
-                className={`text-[14.5px] font-body font-medium transition-opacity duration-200 ${
-                  expanded ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                {item.label}
-              </span>
-            </NavLink>
-          ))}
+                  <span
+                    className={`text-[14.5px] font-body font-medium transition-opacity duration-200 ${
+                      expanded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </button>
 
-          <NavLink
-            to="/create"
-            className="flex items-center gap-4 px-3 py-3 mt-2 rounded-xl bg-volt text-ink-950 hover:bg-volt-dim transition-colors whitespace-nowrap"
-          >
-            <MessageSquarePlus size={22} className="shrink-0" strokeWidth={2.2} />
-            <span
-              className={`text-[14.5px] font-body font-semibold transition-opacity duration-200 ${
-                expanded ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              Report Issue
-            </span>
-          </NavLink>
+                <AnimatePresence>
+                  {createOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -8 }}
+                      transition={{ duration: 0.18 }}
+                      className="absolute left-full top-0 ml-2 w-48 rounded-2xl bg-ink-900 border border-ink-700 shadow-2xl py-2 z-50"
+                    >
+                      <NavLink
+                        to="/create"
+                        onClick={() => setCreateOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-text-dark hover:bg-ink-800 transition-colors"
+                      >
+                        <PlusSquare size={17} />
+                        Post
+                      </NavLink>
+                      <NavLink
+                        to="/create-reel"
+                        onClick={() => setCreateOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-text-dark hover:bg-ink-800 transition-colors"
+                      >
+                        <Clapperboard size={17} />
+                        Reel
+                      </NavLink>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-4 px-3 py-3 rounded-xl transition-colors whitespace-nowrap relative ${
+                    isActive
+                      ? 'bg-ink-800 text-text-dark'
+                      : 'text-text-dark-muted hover:bg-ink-900 hover:text-text-dark'
+                  }`
+                }
+              >
+                <span className="relative shrink-0">
+                  <item.icon size={22} strokeWidth={2} />
+                  {item.badge && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-signal text-[10px] font-bold text-white flex items-center justify-center">
+                      {item.badge}
+                    </span>
+                  )}
+                </span>
+                <span
+                  className={`text-[14.5px] font-body font-medium transition-opacity duration-200 ${
+                    expanded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </NavLink>
+            )
+          )}
+
         </nav>
       </div>
 
@@ -211,22 +250,6 @@ export default function Sidebar() {
                   <HelpCircle size={17} />
                   Help &amp; FAQ
                 </NavLink>
-                <NavLink
-                  to="/about"
-                  className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-text-dark hover:bg-ink-800 transition-colors"
-                >
-                  <Info size={17} />
-                  About UrbanVoice
-                </NavLink>
-
-                <button
-                  onClick={() => setIsDark((v) => !v)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-text-dark hover:bg-ink-800 transition-colors"
-                >
-                  {isDark ? <Sun size={17} /> : <Moon size={17} />}
-                  Switch to {isDark ? 'light' : 'dark'} mode
-                </button>
-
                 <div className="h-px bg-ink-700 my-1.5 mx-4" />
 
                 <button className="w-full flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-signal hover:bg-ink-800 transition-colors">
