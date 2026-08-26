@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect } from 'react';
 import { Mail, ArrowRight, MapPin } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
 import prob1 from '../../assets/prob1.png';
 import prob2 from '../../assets/prob2.png';
 import prob3 from '../../assets/prob3.png';
@@ -18,6 +19,7 @@ const HERO_IMAGES = [prob1, prob2, prob3, prob4, prob5, prob6, prob7, prob8];
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -40,10 +42,10 @@ export default function LoginPage() {
         }
         setLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 700));
-            navigate('/feed');
+            await login({ emailOrUsername: email, password });
+            navigate('/');
         } catch (err) {
-            setError('Could not sign you in. Please try again.');
+            setError(err.response?.data?.message || 'Could not sign you in. Please try again.');
         } finally {
             setLoading(false);
         }

@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import logo from '../assets/logo.png';
+import { useAuth } from '../context/AuthContext';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
@@ -24,6 +25,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -127,19 +129,30 @@ export default function Navbar() {
           </ul>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/login"
-              className="px-4 py-2 text-[14.5px] font-medium font-body text-text-light dark:text-text-dark hover:text-volt-dim dark:hover:text-volt transition-colors"
-            >
-              Log in
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to="/feed"
+                className="px-5 py-2 rounded-full bg-navy text-volt text-[14.5px] font-semibold font-body hover:bg-navy-dim hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+              >
+                Explore
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-[14.5px] font-medium font-body text-text-light dark:text-text-dark hover:text-volt-dim dark:hover:text-volt transition-colors"
+                >
+                  Log in
+                </Link>
 
-            <Link
-              to="/signup"
-              className="px-5 py-2 rounded-full bg-navy text-volt text-[14.5px] font-semibold font-body hover:bg-navy-dim hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-            >
-              Sign up
-            </Link>
+                <Link
+                  to="/signup"
+                  className="px-5 py-2 rounded-full bg-navy text-volt text-[14.5px] font-semibold font-body hover:bg-navy-dim hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
 
           <button
@@ -185,18 +198,29 @@ export default function Navbar() {
                 ))}
 
                 <div className="flex items-center gap-3 mt-4">
-                  <Link
-                    to="/login"
-                    className="flex-1 text-center py-2.5 rounded-full border border-paper-300 dark:border-ink-700 text-text-light dark:text-text-dark text-[14.5px] font-medium font-body"
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    to="/signup"
-                    className="flex-1 text-center py-2.5 rounded-full bg-volt text-ink-950 text-[14.5px] font-semibold font-body"
-                  >
-                    Sign up
-                  </Link>
+                  {isAuthenticated ? (
+                    <Link
+                      to="/feed"
+                      className="flex-1 text-center py-2.5 rounded-full bg-volt text-ink-950 text-[14.5px] font-semibold font-body"
+                    >
+                      Explore
+                    </Link>
+                  ) : (
+                    <>
+                      <Link
+                        to="/login"
+                        className="flex-1 text-center py-2.5 rounded-full border border-paper-300 dark:border-ink-700 text-text-light dark:text-text-dark text-[14.5px] font-medium font-body"
+                      >
+                        Log in
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className="flex-1 text-center py-2.5 rounded-full bg-volt text-ink-950 text-[14.5px] font-semibold font-body"
+                      >
+                        Sign up
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

@@ -1,17 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import reel1 from '../../assets/reel1.mp4';
+import * as api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import {
-  Heart, MessageCircle, Send, Volume2, VolumeX,  MapPin, Building2, Home as HomeIcon, MoreHorizontal, Play,
-  Flag, EyeOff, Share2, Link2, Check, Crown, Shield, Rocket,} from 'lucide-react';
+  Heart, MessageCircle, Send, Volume2, VolumeX, MapPin, Building2, Home as HomeIcon, MoreHorizontal, Play,
+  Flag, EyeOff, Share2, Link2, Check, Crown, Shield, Rocket,
+} from 'lucide-react';
 
-const LEADERS = [
-  { rank: 1, name: 'dharampeth_diaries', ring: 'from-volt to-rose-400' },
-  { rank: 2, name: 'sitabuldi_speaks', ring: 'from-signal to-volt' },
-  { rank: 3, name: 'lift_watch_towerb', ring: 'from-volt to-emerald-400' },
-  { rank: 4, name: 'greenpark_rwa', ring: 'from-volt to-signal' },
-  { rank: 5, name: 'ananya_r', ring: 'from-signal to-volt' },
-];
+const MEDIA_BASE = 'http://localhost:5000';
 
 const RANK_MEDALS = {
   1: { Icon: Crown, disc: 'from-[#fff6da] via-[#f5d576] to-[#b8860b]' },
@@ -19,68 +15,21 @@ const RANK_MEDALS = {
   3: { Icon: Rocket, disc: 'from-[#f3caa0] via-[#e0a458] to-[#8b5a24]' },
 };
 
-const FEED_ITEMS = [
-    {
-    type: 'post',
-    user: 'ananya_r',
-    category: 'Civic',
-    location: 'Nandanvan, Nagpur',
-    time: '2h',
-    caption: 'This road in Nandanvan has been full of potholes for weeks — barely passable after the rain, someone\u2019s going to get hurt.',
-    likes: 142,
-    comments: 18,
-    tone: 'from-signal/30 to-ink-900',
-    icon: Building2,
-    image: 'https://i.ibb.co/KpQ67GMN/Chat-GPT-Image-Aug-24-2026-01-46-06-AM.png',
-  },
-  {
-    type: 'reel',
-    user: 'lift_watch_towerb',
-    category: 'Society',
-    location: 'Lake View Apartments',
-    time: '5h',
-    caption: 'Lift in Tower B down again. Third time this month.',
-    likes: 356,
-    comments: 47,
-    tone: 'from-volt/25 to-ink-900',
-    icon: HomeIcon,
-    video: reel1,
-  },
-  {
-    type: 'post',
-    user: 'ward5_watch',
-    category: 'Civic',
-    location: 'Ram Nagar Crossing',
-    time: '9h',
-    caption: 'Waterlogging every monsoon at this crossing. Attaching photos from this morning.',
-    likes: 89,
-    comments: 11,
-    tone: 'from-signal/25 to-ink-900',
-    icon: Building2,
-  },
-  {
-    type: 'reel',
-    user: 'greenpark_rwa',
-    category: 'Society',
-    location: 'Green Park Society',
-    time: '1d',
-    caption: 'Garbage collection missed for the third day running — video from the back gate.',
-    likes: 210,
-    comments: 29,
-    tone: 'from-volt/20 to-ink-900',
-    icon: HomeIcon,
-  },
-];
+function timeAgo(dateStr) {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks}w`;
+}
 
-const TOP_REPORTERS = [
-  { name: 'ananya_r', sub: 'Followed by ward12_civic', avatar: 'AR' },
-  { name: 'lift_watch_towerb', sub: 'Suggested for you', avatar: 'LW' },
-  { name: 'ward5_watch', sub: 'Followed by nagpur_roads', avatar: 'W5' },
-  { name: 'greenpark_rwa', sub: 'Followed by sunrise_apts', avatar: 'GP' },
-  { name: 'municipal_ward5', sub: 'Suggested for you', avatar: 'M5' },
-];
-
-function PostOptionsMenu({ onReport, onNotInterested, onShare, onCopyLink }) {  const [open, setOpen] = useState(false);
+function PostOptionsMenu({ onReport, onNotInterested, onShare, onCopyLink }) {
+  const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const menuRef = useRef(null);
 
@@ -195,13 +144,22 @@ function StoryRing({ name, ring, rank }) {
   );
 }
 
-function FeedCard({ item, showToast }) {  
-  const [liked, setLiked] = useState(false);
+function FeedCard({ item, currentUserId, showToast, onToggleLike }) {
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [hidden, setHidden] = useState(false);
+  const [commentCount, setCommentCount] = useState(null);
   const videoRef = useRef(null);
-  const Icon = item.icon;
+  const Icon = item.type === 'reel' ? HomeIcon : Building2;
+
+  const liked = item.likes?.includes(currentUserId);
+  const likeCount = item.likes?.length || 0;
+
+  useEffect(() => {
+    api.getComments(item._id)
+      .then((res) => setCommentCount(res.data.length))
+      .catch(() => setCommentCount(0));
+  }, [item._id]);
 
   if (hidden) {
     return (
@@ -233,22 +191,28 @@ function FeedCard({ item, showToast }) {
     setMuted(videoRef.current.muted);
   };
 
+  const mediaUrl = item.mediaUrl ? `${MEDIA_BASE}${item.mediaUrl}` : null;
+
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">
-            <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-              <span className="text-[10px] font-semibold text-text-dark font-body">
-                {item.user.slice(0, 2).toUpperCase()}
-              </span>
+            <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+              {item.user?.avatar ? (
+                <img src={`${MEDIA_BASE}${item.user.avatar}`} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[10px] font-semibold text-text-dark font-body">
+                  {item.user?.username?.slice(0, 2).toUpperCase()}
+                </span>
+              )}
             </div>
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[13.5px] font-semibold font-body text-text-dark">{item.user}</span>
+              <span className="text-[13.5px] font-semibold font-body text-text-dark">{item.user?.username}</span>
               <span className="text-text-dark-muted">·</span>
-              <span className="text-[12.5px] text-text-dark-muted font-body">{item.time}</span>
+              <span className="text-[12.5px] text-text-dark-muted font-body">{timeAgo(item.createdAt)}</span>
             </div>
             <div className="flex items-center gap-1 text-[12px] text-text-dark-muted font-body">
               <MapPin size={11} />
@@ -257,10 +221,11 @@ function FeedCard({ item, showToast }) {
           </div>
         </div>
         <PostOptionsMenu
-          onReport={() => alert(`${item.user}'s post has been reported. Our team will review it.`)}
+          onReport={() => showToast('Reported. Our team will review it.')}
           onNotInterested={() => setHidden(true)}
           onShare={async () => {
-            const shareUrl = `https://urbanvoice.app/post/${item.user}`;
+            await api.addShare(item._id).catch(() => {});
+            const shareUrl = `${window.location.origin}/feed`;
             if (navigator.share) {
               try {
                 await navigator.share({ title: 'UrbanVoice Post', text: item.caption, url: shareUrl });
@@ -273,14 +238,14 @@ function FeedCard({ item, showToast }) {
             }
           }}
           onCopyLink={async () => {
-            await navigator.clipboard?.writeText(`https://urbanvoice.app/post/${item.user}`);
+            await navigator.clipboard?.writeText(`${window.location.origin}/feed`);
             showToast('Link copied to clipboard.');
           }}
         />
       </div>
 
-      <div className={`relative aspect-square ${item.image || item.video ? 'bg-ink-800' : `bg-gradient-to-br ${item.tone}`} flex items-center justify-center overflow-hidden`}>
-        {item.video ? (
+      <div className="relative aspect-square bg-ink-800 flex items-center justify-center overflow-hidden">
+        {item.mediaType === 'video' ? (
           <video
             ref={videoRef}
             autoPlay
@@ -290,10 +255,10 @@ function FeedCard({ item, showToast }) {
             onClick={togglePlay}
             className="w-full h-full object-cover cursor-pointer"
           >
-            <source src={item.video} type="video/mp4" />
+            <source src={mediaUrl} type="video/mp4" />
           </video>
-        ) : item.image ? (
-          <img src={item.image} alt={item.caption} className="w-full h-full object-cover" />
+        ) : mediaUrl ? (
+          <img src={mediaUrl} alt={item.caption} className="w-full h-full object-cover" />
         ) : (
           <div className="w-20 h-20 rounded-full bg-ink-950/40 flex items-center justify-center backdrop-blur-sm">
             <Icon size={34} className="text-text-dark/70" />
@@ -326,11 +291,8 @@ function FeedCard({ item, showToast }) {
 
       <div className="flex items-center justify-between px-4 pt-3">
         <div className="flex items-center gap-4">
-          <button onClick={() => setLiked((v) => !v)}>
-            <Heart
-              size={22}
-              className={liked ? 'text-signal fill-signal' : 'text-text-dark'}
-            />
+          <button onClick={() => onToggleLike(item._id)}>
+            <Heart size={22} className={liked ? 'text-signal fill-signal' : 'text-text-dark'} />
           </button>
           <button><MessageCircle size={22} className="text-text-dark" /></button>
           <button><Send size={20} className="text-text-dark" /></button>
@@ -338,71 +300,148 @@ function FeedCard({ item, showToast }) {
       </div>
 
       <div className="px-4 pt-2 pb-4">
-        <p className="text-[13.5px] font-semibold font-body text-text-dark">
-          {liked ? item.likes + 1 : item.likes} likes
-        </p>
+        <p className="text-[13.5px] font-semibold font-body text-text-dark">{likeCount} likes</p>
         <p className="text-[13.5px] font-body text-text-dark mt-1 leading-relaxed">
-          <span className="font-semibold">{item.user}</span>{' '}
+          <span className="font-semibold">{item.user?.username}</span>{' '}
           <span className="text-text-dark-muted">{item.caption}</span>
         </p>
-        <p className="text-[12.5px] font-body text-text-dark-muted mt-1">
-          View all {item.comments} comments
-        </p>
+        {commentCount !== null && commentCount > 0 && (
+          <p className="text-[12.5px] font-body text-text-dark-muted mt-1">
+            View all {commentCount} comments
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
 export default function HomeFeedPage() {
+  const { user } = useAuth();
   const [toast, setToast] = useState('');
+  const [feedItems, setFeedItems] = useState([]);
+  const [leaders, setLeaders] = useState([]);
+  const [topReporters, setTopReporters] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 1800);
   };
+
+  const loadFeed = async () => {
+    try {
+      const res = await api.getComplaints();
+      setFeedItems(res.data);
+    } catch (err) {
+      console.error('Failed to load feed', err);
+    }
+  };
+
+  const loadLeaderboard = async () => {
+    try {
+      const res = await api.getLeaderboard();
+      const RINGS = ['from-volt to-rose-400', 'from-signal to-volt', 'from-volt to-emerald-400', 'from-volt to-signal', 'from-signal to-volt'];
+      const top5 = res.data.slice(0, 5).map((u, i) => ({ rank: i + 1, name: u.username, ring: RINGS[i % RINGS.length] }));
+      setLeaders(top5);
+      setTopReporters(res.data.slice(0, 5).map((u) => ({ name: u.username, sub: `${u.score} points`, avatar: u.username.slice(0, 2).toUpperCase(), userId: u._id })));
+    } catch (err) {
+      console.error('Failed to load leaderboard', err);
+    }
+  };
+
+  useEffect(() => {
+    Promise.all([loadFeed(), loadLeaderboard()]).finally(() => setLoading(false));
+  }, []);
+
+  const handleToggleLike = async (id) => {
+    // optimistic-ish: call backend then refresh that item's likes from response isn't returned fully, so just refetch feed
+    try {
+      await api.toggleLike(id);
+      setFeedItems((prev) =>
+        prev.map((it) => {
+          if (it._id !== id) return it;
+          const already = it.likes.includes(user._id);
+          return {
+            ...it,
+            likes: already ? it.likes.filter((uid) => uid !== user._id) : [...it.likes, user._id],
+          };
+        })
+      );
+    } catch (err) {
+      showToast('Could not update like.');
+    }
+  };
+
+  const handleFollow = async (userId) => {
+    try {
+      await api.toggleFollow(userId);
+      showToast('Follow updated.');
+    } catch (err) {
+      showToast('Could not follow user.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen ml-[76px] bg-ink-950 flex items-center justify-center">
+        <p className="text-text-dark-muted font-body">Loading feed...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen ml-[76px] bg-ink-950">
       <div className="max-w-[1100px] mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
 
         <div>
-          <div className="flex items-start gap-4 overflow-x-auto pb-5 mb-2 scrollbar-hide">
-            {[LEADERS[3], LEADERS[1], LEADERS[0], LEADERS[2], LEADERS[4]].map((s) => (
-              <StoryRing key={s.rank} {...s} />
-            ))}
-          </div>
+          {leaders.length > 0 && (
+            <div className="flex items-start gap-4 overflow-x-auto pb-5 mb-2 scrollbar-hide">
+              {leaders.map((s) => (
+                <StoryRing key={s.rank} {...s} />
+              ))}
+            </div>
+          )}
 
           <div className="flex flex-col gap-6 max-w-[500px] mx-auto lg:mx-0">
-            {FEED_ITEMS.map((item, i) => (
+            {feedItems.length === 0 && (
+              <p className="text-center text-text-dark-muted font-body py-10">
+                No posts yet. Be the first to report an issue!
+              </p>
+            )}
+            {feedItems.map((item, i) => (
               <motion.div
-                key={i}
+                key={item._id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <FeedCard item={item} showToast={showToast} />              </motion.div>
+                <FeedCard item={item} currentUserId={user?._id} showToast={showToast} onToggleLike={handleToggleLike} />
+              </motion.div>
             ))}
           </div>
         </div>
 
         <div className="hidden lg:block pt-2 sticky top-6 self-start h-fit">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-11 h-11 rounded-full bg-volt/20 border border-volt/40 flex items-center justify-center">
-              <span className="text-volt text-[12px] font-bold font-body">AB</span>
+            <div className="w-11 h-11 rounded-full bg-volt/20 border border-volt/40 flex items-center justify-center overflow-hidden">
+              {user?.avatar ? (
+                <img src={`${MEDIA_BASE}${user.avatar}`} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-volt text-[12px] font-bold font-body">{user?.username?.slice(0, 2).toUpperCase()}</span>
+              )}
             </div>
             <div className="flex-1">
-              <p className="text-[13.5px] font-semibold font-body text-text-dark">atharv_b</p>
-              <p className="text-[12.5px] text-text-dark-muted font-body">Atharv Bhorkar</p>
+              <p className="text-[13.5px] font-semibold font-body text-text-dark">{user?.username}</p>
+              <p className="text-[12.5px] text-text-dark-muted font-body">{user?.fullName}</p>
             </div>
-            <button className="text-[12.5px] font-semibold font-body text-signal">Switch</button>
           </div>
 
           <div className="flex items-center justify-between mb-3">
             <p className="text-[13px] font-semibold font-body text-text-dark-muted">Top reporters</p>
-            <button className="text-[12px] font-semibold font-body text-text-dark">See all</button>
           </div>
 
           <div className="flex flex-col gap-3.5">
-            {TOP_REPORTERS.map((r, i) => (
+            {topReporters.map((r, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
                   <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
@@ -413,7 +452,12 @@ export default function HomeFeedPage() {
                   <p className="text-[13px] font-semibold font-body text-text-dark truncate">{r.name}</p>
                   <p className="text-[11.5px] text-text-dark-muted font-body truncate">{r.sub}</p>
                 </div>
-                <button className="text-[12.5px] font-semibold font-body text-signal shrink-0">Follow</button>
+                <button
+                  onClick={() => handleFollow(r.userId)}
+                  className="text-[12.5px] font-semibold font-body text-signal shrink-0"
+                >
+                  Follow
+                </button>
               </div>
             ))}
           </div>

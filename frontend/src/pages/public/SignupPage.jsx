@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect } from 'react';
 import { Mail, ArrowRight, MapPin, Phone, AtSign, User, Camera, X } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
+import * as api from '../../services/api';
 import prob1 from '../../assets/prob1.png';
 import prob2 from '../../assets/prob2.png';
 import prob3 from '../../assets/prob3.png';
@@ -69,10 +70,15 @@ export default function SignupPage() {
 
         setLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 700));
-            navigate('/feed');
+            await api.signup({
+                username: form.username,
+                fullName: form.name,
+                email: form.email,
+                password: form.password,
+            });
+            navigate('/login');
         } catch (err) {
-            setError('Could not create your account. Please try again.');
+            setError(err.response?.data?.message || 'Could not create your account. Please try again.');
         } finally {
             setLoading(false);
         }

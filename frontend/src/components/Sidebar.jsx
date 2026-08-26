@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home, Clapperboard, Trophy, PlusSquare,
@@ -22,6 +23,8 @@ const PROFILE_MENU = [
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -252,7 +255,14 @@ export default function Sidebar() {
                 </NavLink>
                 <div className="h-px bg-ink-700 my-1.5 mx-4" />
 
-                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-signal hover:bg-ink-800 transition-colors">
+                <button
+                  onClick={() => {
+                    logout();
+                    setMoreOpen(false);
+                    navigate('/');
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-signal hover:bg-ink-800 transition-colors"
+                >
                   <LogOut size={17} />
                   Logout
                 </button>
