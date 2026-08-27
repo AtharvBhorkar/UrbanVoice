@@ -1,55 +1,26 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Bookmark, Send, Volume2, VolumeX, Play, MapPin } from 'lucide-react';
-import reel1 from '../../assets/reel1.mp4';
-import hero1 from '../../assets/hero1.mp4';
-import section1 from '../../assets/section1.mp4';
-import communityHero from '../../assets/community_hero.mp4';
+import * as api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
-const REELS = [
-  {
-    id: 1,
-    user: 'lift_watch_towerb',
-    location: 'Lake View Apartments',
-    caption: 'Lift in Tower B down again. Third time this month.',
-    likes: 356,
-    comments: 47,
-    video: reel1,
-  },
-  {
-    id: 2,
-    user: 'ward5_watch',
-    location: 'Ram Nagar Crossing',
-    caption: 'Waterlogging every monsoon at this crossing.',
-    likes: 210,
-    comments: 29,
-    video: hero1,
-  },
-  {
-    id: 3,
-    user: 'greenpark_rwa',
-    location: 'Green Park Society',
-    caption: 'Garbage collection missed for the third day running.',
-    likes: 189,
-    comments: 22,
-    video: section1,
-  },
-  {
-    id: 4,
-    user: 'nagpur_roads',
-    location: 'Nandanvan, Nagpur',
-    caption: 'Potholes everywhere after the rain — someone will get hurt.',
-    likes: 412,
-    comments: 63,
-    video: communityHero,
-  },
-];
+const MEDIA_BASE = 'http://localhost:5000';
 
-function ReelItem({ item }) {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+function ReelItem({ item, currentUserId, onToggleLike, onToggleSave, isSaved }) {
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
+  const [commentCount, setCommentCount] = useState(0);
+  const [viewRegistered, setViewRegistered] = useState(false);
   const videoRef = useRef(null);
+
+  const liked = item.likes?.includes(currentUserId);
+  const likeCount = item.likes?.length || 0;
+  const videoUrl = item.mediaUrl ? `${MEDIA_BASE}${item.mediaUrl}` : null;
+
+  useEffect(() => {
+    api.getComments(item._id)
+      .then((res) => setCommentCount(res.data.length))
+      .catch(() => setCommentCount(0));
+  }, [item._id]);
 
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -64,17 +35,26 @@ function ReelItem({ item }) {
     setMuted(videoRef.current.muted);
   };
 
+  // Register a view once, when the reel has played a bit
+  const handleTimeUpdate = () => {
+    if (!viewRegistered && videoRef.current && videoRef.current.currentTime > 3) {
+      setViewRegistered(true);
+      api.addView(item._id).catch(() => {});
+    }
+  };
+
   return (
     <div className="relative w-full h-screen snap-start flex items-center justify-center bg-black">
       <div className="relative w-[420px] h-[94vh] max-h-[880px] rounded-2xl overflow-hidden bg-ink-900">
         <video
           ref={videoRef}
-          src={item.video}
+          src={videoUrl}
           autoPlay
           loop
           muted={muted}
           playsInline
           onClick={togglePlay}
+          onTimeUpdate={handleTimeUpdate}
           className="w-full h-full object-cover cursor-pointer"
         />
 
@@ -99,13 +79,17 @@ function ReelItem({ item }) {
         <div className="absolute left-4 right-16 bottom-8 text-text-dark z-10">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">
-              <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-                <span className="text-[10px] font-semibold font-body">
-                  {item.user.slice(0, 2).toUpperCase()}
-                </span>
+              <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+                {item.user?.avatar ? (
+                  <img src={`${MEDIA_BASE}${item.user.avatar}`} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-[10px] font-semibold font-body">
+                    {item.user?.username?.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
               </div>
             </div>
-            <span className="text-[13.5px] font-semibold font-body">{item.user}</span>
+            <span className="text-[13.5px] font-semibold font-body">{item.user?.username}</span>
           </div>
           <div className="flex items-center gap-1 text-[12px] text-text-dark-muted font-body mb-1.5">
             <MapPin size={11} />
@@ -113,24 +97,26 @@ function ReelItem({ item }) {
           </div>
           <p className="text-[13.5px] font-body leading-relaxed">{item.caption}</p>
         </div>
-
       </div>
 
       <div className="absolute right-[calc(50%-198px)] bottom-8 flex flex-col items-center gap-5 z-20">
-        <button onClick={() => setLiked((v) => !v)} className="flex flex-col items-center gap-1">
+        <button onClick={() => onToggleLike(item._id)} className="flex flex-col items-center gap-1">
           <Heart size={26} className={liked ? 'text-signal fill-signal' : 'text-text-dark'} />
-          <span className="text-[11px] font-body text-text-dark-muted">
-            {liked ? item.likes + 1 : item.likes}
-          </span>
+          <span className="text-[11px] font-body text-text-dark-muted">{likeCount}</span>
         </button>
         <button className="flex flex-col items-center gap-1">
           <MessageCircle size={26} className="text-text-dark" />
-          <span className="text-[11px] font-body text-text-dark-muted">{item.comments}</span>
+          <span className="text-[11px] font-body text-text-dark-muted">{commentCount}</span>
         </button>
-        <button onClick={() => setSaved((v) => !v)}>
-          <Bookmark size={24} className={saved ? 'text-volt fill-volt' : 'text-text-dark'} />
+        <button onClick={() => onToggleSave(item._id)}>
+          <Bookmark size={24} className={isSaved ? 'text-volt fill-volt' : 'text-text-dark'} />
         </button>
-        <button>
+        <button
+          onClick={async () => {
+            await api.addShare(item._id).catch(() => {});
+            await navigator.clipboard?.writeText(`${window.location.origin}/reels`);
+          }}
+        >
           <Send size={22} className="text-text-dark" />
         </button>
       </div>
@@ -139,10 +125,78 @@ function ReelItem({ item }) {
 }
 
 export default function ReelsPage() {
+  const { user } = useAuth();
+  const [reels, setReels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [savedIds, setSavedIds] = useState([]);
+
+  useEffect(() => {
+    api.getComplaints('reel')
+      .then((res) => setReels(res.data))
+      .catch((err) => console.error('Failed to load reels', err))
+      .finally(() => setLoading(false));
+
+    api.getMe()
+      .then((res) => setSavedIds(res.data.savedIssues || []))
+      .catch(() => {});
+  }, []);
+
+  const handleToggleLike = async (id) => {
+    try {
+      await api.toggleLike(id);
+      setReels((prev) =>
+        prev.map((it) => {
+          if (it._id !== id) return it;
+          const already = it.likes.includes(user._id);
+          return {
+            ...it,
+            likes: already ? it.likes.filter((uid) => uid !== user._id) : [...it.likes, user._id],
+          };
+        })
+      );
+    } catch (err) {
+      console.error('Like failed', err);
+    }
+  };
+
+  const handleToggleSave = async (id) => {
+    try {
+      await api.toggleSave(id);
+      setSavedIds((prev) =>
+        prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+      );
+    } catch (err) {
+      console.error('Save failed', err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="ml-[76px] h-screen flex items-center justify-center bg-black">
+        <p className="text-text-dark-muted font-body">Loading reels...</p>
+      </div>
+    );
+  }
+
+  if (reels.length === 0) {
+    return (
+      <div className="ml-[76px] h-screen flex items-center justify-center bg-black">
+        <p className="text-text-dark-muted font-body">No reels yet. Be the first to post one!</p>
+      </div>
+    );
+  }
+
   return (
     <div className="ml-[76px] h-screen overflow-y-scroll snap-y snap-mandatory bg-black scrollbar-hide">
-      {REELS.map((item) => (
-        <ReelItem key={item.id} item={item} />
+      {reels.map((item) => (
+        <ReelItem
+          key={item._id}
+          item={item}
+          currentUserId={user?._id}
+          onToggleLike={handleToggleLike}
+          onToggleSave={handleToggleSave}
+          isSaved={savedIds.includes(item._id)}
+        />
       ))}
     </div>
   );

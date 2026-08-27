@@ -8,17 +8,12 @@ import {
   Bookmark, VolumeX, Volume2, ChevronLeft, ChevronRight, Send,
 } from 'lucide-react';
 import { BADGES, SUPREME, isUnlocked } from '../../data/badges.js';
+import * as api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
-const USER = {
-  username: 'atharv_b',
-  fullName: 'Atharv Bhorkar',
-  posts: 2,
-  followers: '12.3K',
-  following: 27,
-  role: 'Civic Reporter',
-  bio: 'Reporting what needs to be seen, one complaint at a time.',
-  thread: 'atharv_b',
-};
+const MEDIA_BASE = 'http://localhost:5000';
+
+// USER is now built dynamically from the logged-in account inside the component (see below)
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say', 'Custom'];
 
@@ -77,7 +72,19 @@ const INITIAL_REELS = [
 ];
 
 export default function ProfilePage() {
+  const { user, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState('reels');
+
+  const USER = {
+    username: user?.username || '',
+    fullName: user?.fullName || '',
+    posts: 0, // will be replaced by real count below via realPosts.length + realReels.length
+    followers: user?.followers?.length || 0,
+    following: user?.following?.length || 0,
+    role: 'Civic Reporter',
+    bio: user?.bio || '',
+    thread: user?.username || '',
+  };
   const [badgesModalOpen, setBadgesModalOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [avatarViewOpen, setAvatarViewOpen] = useState(false);
@@ -104,8 +111,14 @@ export default function ProfilePage() {
   const [reelSaved, setReelSaved] = useState(false);
   const [reelMuted, setReelMuted] = useState(true);
   const [reelOptionsOpen, setReelOptionsOpen] = useState(false);
-  const [reels, setReels] = useState(() => loadStoredProfile().reels || INITIAL_REELS);
-  const [posts, setPosts] = useState(() => loadStoredProfile().posts || POSTS);
+  const [reels, setReels] = useState([]);
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    if (!user?._id) return;
+    api.getComplaintsByUser(user._id, 'post').then((res) => setPosts(res.data)).catch(() => {});
+    api.getComplaintsByUser(user._id, 'reel').then((res) => setReels(res.data)).catch(() => {});
+  }, [user?._id]);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [editingCaption, setEditingCaption] = useState(false);
   const [captionDraft, setCaptionDraft] = useState('');
@@ -173,13 +186,23 @@ export default function ProfilePage() {
     setEditProfileOpen(true);
   };
 
-  const handleSubmitEditProfile = () => {
-    setProfileBio(bioDraft);
-    setProfileGender(genderDraft);
-    setProfileWebsite(websiteDraft.trim());
-    setProfileWebsiteLabel(websiteLabelDraft.trim());
-    setEditProfileOpen(false);
-    showToast('Profile updated.');
+  const handleSubmitEditProfile = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('bio', bioDraft);
+      formData.append('gender', genderDraft);
+      formData.append('website', websiteDraft.trim());
+      await api.updateProfile(formData);
+      await refreshUser();
+      setProfileBio(bioDraft);
+      setProfileGender(genderDraft);
+      setProfileWebsite(websiteDraft.trim());
+      setProfileWebsiteLabel(websiteLabelDraft.trim());
+      setEditProfileOpen(false);
+      showToast('Profile updated.');
+    } catch (err) {
+      showToast('Could not update profile.');
+    }
   };
 
   const handleDeletePost = () => {
@@ -291,11 +314,15 @@ export default function ProfilePage() {
     }
   }, [profileImage, profileBio, profileGender, profileWebsite, profileWebsiteLabel, posts, reels]);
 
+  const realBadgeCount = user?.badges?.length || 0;
   const earnedBadges = useMemo(() => {
-    const unlocked = BADGES.filter(isUnlocked).slice().reverse();
-    if (isUnlocked(SUPREME)) unlocked.unshift(SUPREME);
+    // Show as many "unlocked-style" badge tiles as the user has actually earned on the backend,
+    // using the existing local badge visuals in order.
+    const allTiers = [...BADGES].reverse();
+    const unlocked = allTiers.slice(0, realBadgeCount);
+    if (realBadgeCount >= BADGES.length + 1 && isUnlocked(SUPREME)) unlocked.unshift(SUPREME);
     return unlocked;
-  }, []);
+  }, [realBadgeCount]);
 
   const visibleBadges = earnedBadges.slice(0, 5);
 
@@ -351,7 +378,7 @@ export default function ProfilePage() {
 
             <div className="flex items-center gap-8 mb-4">
               <span className="text-[14px] font-body text-text-dark">
-                <strong className="font-semibold">{USER.posts}</strong> posts
+                <strong className="font-semibold">{posts.length + reels.length}</strong> posts
               </span>
               <span className="text-[14px] font-body text-text-dark">
                 <strong className="font-semibold">{USER.followers}</strong> followers
@@ -474,13 +501,17 @@ export default function ProfilePage() {
             <div className="grid grid-cols-3 gap-1">
               {posts.map((p, i) => (
                 <motion.div
-                  key={p.id}
+                  key={p._id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => { setOpenPostIndex(i); setPostLiked(false); setPostSaved(false); }}
-                  className={`aspect-square bg-gradient-to-br ${p.tone} cursor-pointer hover:brightness-110 transition-all`}
-                />
+                  className="aspect-square bg-ink-800 cursor-pointer hover:brightness-110 transition-all overflow-hidden"
+                >
+                  {p.mediaUrl && (
+                    <img src={`${MEDIA_BASE}${p.mediaUrl}`} alt="" className="w-full h-full object-cover" />
+                  )}
+                </motion.div>
               ))}
             </div>
           ) : (
@@ -495,31 +526,27 @@ export default function ProfilePage() {
           <div className="grid grid-cols-3 gap-1">
             {reels.map((r, i) => (
               <motion.div
-                key={r.id}
+                key={r._id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.05 }}
                 onClick={() => { setOpenReelIndex(i); setReelLiked(false); setReelSaved(false); }}
-                className={`group relative aspect-[9/16] bg-gradient-to-br ${r.tone} cursor-pointer overflow-hidden`}
+                className="group relative aspect-[9/16] bg-ink-800 cursor-pointer overflow-hidden"
               >
-                <Clapperboard size={14} className="absolute top-2 left-2 text-text-dark/80" />
+                <Clapperboard size={14} className="absolute top-2 left-2 text-text-dark/80 z-10" />
 
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2.5 pt-8 pb-2.5 flex items-center justify-between">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2.5 pt-8 pb-2.5 flex items-center justify-between z-10">
                   <span className="flex items-center gap-1 text-[11px] font-body text-text-dark">
                     <Heart size={12} className="fill-text-dark" />
-                    {r.likes}
-                  </span>
-                  <span className="flex items-center gap-1 text-[11px] font-body text-text-dark">
-                    <MessageCircle size={12} />
-                    {r.comments}
+                    {r.likes?.length || 0}
                   </span>
                   <span className="flex items-center gap-1 text-[11px] font-body text-text-dark">
                     <Share2 size={12} />
-                    {r.shares}
+                    {r.shares || 0}
                   </span>
                   <span className="flex items-center gap-1 text-[11px] font-body text-text-dark">
                     <Eye size={12} />
-                    {r.views}
+                    {r.views || 0}
                   </span>
                 </div>
               </motion.div>
