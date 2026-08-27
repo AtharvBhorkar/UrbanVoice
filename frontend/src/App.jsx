@@ -9,6 +9,7 @@ import CreateReelPage from './pages/feed/CreateReelPage.jsx';
 import NotificationsPage from './pages/feed/NotificationsPage.jsx';
 import ReelsPage from './pages/feed/ReelsPage.jsx';
 import ProfilePage from './pages/feed/ProfilePage.jsx';
+import UserProfilePage from './pages/feed/UserProfilePage.jsx';
 import LeaderboardPage from './pages/feed/LeaderboardPage.jsx';
 import MyBadgesPage from './pages/feed/MyBadgesPage.jsx';
 import SearchPage from './pages/feed/SearchPage.jsx';
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="/create-reel" element={<CreateReelPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:username" element={<UserProfilePage />} />
           <Route path="/my-complaints" element={<AppPlaceholder title="My Complaints" />} />
           <Route path="/my-badges" element={<MyBadgesPage />} />
           <Route path="/saved-issues" element={<AppPlaceholder title="Saved Issues" />} />

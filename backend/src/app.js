@@ -7,6 +7,7 @@ const complaintRoutes = require('./routes/complaintRoutes');
 const engagementRoutes = require('./routes/engagementRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/complaints', complaintRoutes);
 app.use('/api/engagement', engagementRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/messages', messageRoutes);
 
 // 404 handler
 app.use((req, res) => {

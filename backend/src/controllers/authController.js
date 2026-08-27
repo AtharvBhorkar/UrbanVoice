@@ -141,4 +141,86 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getMe, forgotPassword, updateProfile };
+// @desc    Search users by username (public)
+// @route   GET /api/auth/search?q=someusername
+const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || !q.trim()) {
+      return res.status(200).json([]);
+    }
+
+    const users = await User.find({
+      username: { $regex: q.trim(), $options: 'i' },
+    })
+      .select('username fullName avatar location bio')
+      .limit(20);
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get any user's public profile by username
+// @route   GET /api/auth/user/:username
+const getUserByUsername = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username })
+      .select('username fullName avatar bio website location followers following points badges createdAt');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get a user's followers list (with populated user info)
+// @route   GET /api/auth/user/:username/followers
+const getFollowersList = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username }).populate(
+      'followers',
+      'username avatar fullName'
+    );
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user.followers);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get a user's following list (with populated user info)
+// @route   GET /api/auth/user/:username/following
+const getFollowingList = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username }).populate(
+      'following',
+      'username avatar fullName'
+    );
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user.following);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getMe,
+  forgotPassword,
+  updateProfile,
+  searchUsers,
+  getUserByUsername,
+  getFollowersList,
+  getFollowingList,
+};

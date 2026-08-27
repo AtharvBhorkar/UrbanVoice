@@ -5,14 +5,21 @@ import {
   Crown, Heart, MessageCircle, Share2, Users, Eye,
   MapPin, Sparkles, Play, Info, X, Shield, Rocket, TrendingUp,
 } from 'lucide-react';
-import { RANKED, fmt } from '../../data/leaderboard.js';
+import { useEffect } from 'react';
+import * as api from '../../services/api';
 
-const TABS = [
-  { label: 'Top 10', count: 10 },
-  { label: 'Top 20', count: 20 },
-  { label: 'Top 30', count: 30 },
-  { label: 'All', count: RANKED.length },
+const MEDIA_BASE = 'http://localhost:5000';
+const RINGS = [
+  'from-volt to-rose-400', 'from-signal to-volt', 'from-volt to-emerald-400',
+  'from-volt to-signal', 'from-signal to-volt', 'from-emerald-400 to-volt',
 ];
+
+function fmt(n) {
+  if (n === undefined || n === null) return '0';
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return String(n);
+}
 
 const MEDALS = {
   1: {
@@ -158,10 +165,14 @@ function RoyalCard({ item, onClick, isSelected }) {
             isFirst ? 'w-20 h-20' : isPodium ? 'w-16 h-16' : 'w-12 h-12'
           }`}
         >
-          <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-            <span className={`font-semibold text-text-dark font-body ${isFirst ? 'text-[15px]' : 'text-[11px]'}`}>
-              {item.avatar}
-            </span>
+          <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+            {item.avatarUrl ? (
+              <img src={item.avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className={`font-semibold text-text-dark font-body ${isFirst ? 'text-[15px]' : 'text-[11px]'}`}>
+                {item.avatar}
+              </span>
+            )}
           </div>
         </div>
         <MedalDisc rank={item.rank} discSize={isFirst ? 32 : isPodium ? 26 : 0} iconSize={isFirst ? 15 : 12} />
@@ -240,12 +251,45 @@ export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCard, setSelectedCard] = useState(null);
   const [rulesOpen, setRulesOpen] = useState(false);
+  const [ranked, setRanked] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const top5 = RANKED.slice(0, 5);
-  // podium display order: 4, 2, 1, 3, 5
+  useEffect(() => {
+    api.getLeaderboard()
+      .then((res) => {
+        const mapped = res.data.map((u, i) => ({
+          rank: u.rank,
+          user: u.username,
+          avatar: u.username.slice(0, 2).toUpperCase(),
+          avatarUrl: u.avatar ? `${MEDIA_BASE}${u.avatar}` : null,
+          ring: RINGS[i % RINGS.length],
+          location: u.location || '',
+          category: '',
+          caption: `${u.fullName || u.username} has earned ${fmt(u.score)} points from ${fmt(u.totalLikes)} likes, ${fmt(u.totalComments)} comments and ${fmt(u.totalShares)} shares.`,
+          likes: u.totalLikes,
+          comments: u.totalComments,
+          shares: u.totalShares,
+          followers: u.followersCount,
+          views: u.totalViews,
+          score: u.score,
+        }));
+        setRanked(mapped);
+      })
+      .catch((err) => console.error('Failed to load leaderboard', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const tabsWithCounts = [
+    { label: 'Top 10', count: 10 },
+    { label: 'Top 20', count: 20 },
+    { label: 'Top 30', count: 30 },
+    { label: 'All', count: ranked.length },
+  ];
+
+  const top5 = ranked.slice(0, 5);
   const podiumOrder = [top5[3], top5[1], top5[0], top5[2], top5[4]].filter(Boolean);
 
-  const visibleList = useMemo(() => RANKED.slice(0, TABS[activeTab].count), [activeTab]);
+  const visibleList = useMemo(() => ranked.slice(0, tabsWithCounts[activeTab].count), [activeTab, ranked]);
 
   return (
     <div className="min-h-screen ml-[76px] bg-ink-950 px-8 py-8">
@@ -368,19 +412,11 @@ export default function LeaderboardPage() {
 
                 <div className="flex justify-center">
                   <button
-                    onClick={() =>
-                      navigate('/reels', {
-                        state: {
-                          reelUser: selectedCard.user,
-                          reelLocation: selectedCard.location,
-                          reelCaption: selectedCard.caption,
-                        },
-                      })
-                    }
+                    onClick={() => navigate(`/profile/${selectedCard.user}`)}
                     className="flex items-center justify-center gap-2 mt-5 px-6 py-2 rounded-full bg-[#f5d576] hover:bg-[#e8c65e] text-ink-950 text-[13px] font-semibold font-body transition-colors"
                   >
                     <Play size={14} fill="currentColor" />
-                    View Reel
+                    View Profile
                   </button>
                 </div>
               </div>
@@ -390,7 +426,7 @@ export default function LeaderboardPage() {
 
         {/* ===== Tabs ===== */}
         <div className="flex items-center gap-2 mb-4">
-          {TABS.map((tab, i) => (
+          {tabsWithCounts.map((tab, i) => (
             <button
               key={tab.label}
               onClick={() => setActiveTab(i)}
@@ -416,7 +452,13 @@ export default function LeaderboardPage() {
               transition={{ duration: 0.15 }}
               className="px-2 py-2"
             >
-              {visibleList.map((item, i) => (
+              {loading && (
+                <p className="text-center text-text-dark-muted font-body py-10">Loading leaderboard...</p>
+              )}
+              {!loading && visibleList.length === 0 && (
+                <p className="text-center text-text-dark-muted font-body py-10">No activity yet. Be the first to earn points!</p>
+              )}
+              {!loading && visibleList.map((item, i) => (
                 <ListRow key={item.user} item={item} index={i} />
               ))}
             </motion.div>

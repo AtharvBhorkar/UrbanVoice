@@ -4,6 +4,8 @@ import {
   X, Image as ImageIcon, Play, ArrowLeft, Maximize2, ZoomIn, RectangleHorizontal,
   MapPin, Check,
 } from 'lucide-react';
+import * as api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const SUGGESTED_LOCATIONS = [
   'Nandanvan, Nagpur',
@@ -20,7 +22,9 @@ const SUGGESTED_LOCATIONS = [
 
 export default function CreatePostPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState('');
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [zoom, setZoom] = useState(1);
@@ -51,9 +55,23 @@ export default function CreatePostPage() {
     setAspectIndex((i) => (i + 1) % ASPECT_RATIOS.length);
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     setStep('sharing');
-    setTimeout(() => setStep('shared'), 8000);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('type', 'post');
+      formData.append('caption', caption);
+      formData.append('category', 'Other');
+      formData.append('location', selectedLocation || '');
+      formData.append('media', file);
+
+      await api.createComplaint(formData);
+      setStep('shared');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not share your post. Please try again.');
+      setStep('details');
+    }
   };
 
   const handleFiles = (files) => {
@@ -160,11 +178,17 @@ export default function CreatePostPage() {
               <div className="w-[45%] flex flex-col overflow-y-auto">
                 <div className="flex items-center gap-2.5 px-4 py-4">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
-                    <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-                      <span className="text-[10px] font-semibold text-text-dark font-body">AB</span>
+                    <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+                      {user?.avatar ? (
+                        <img src={`http://localhost:5000${user.avatar}`} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] font-semibold text-text-dark font-body">
+                          {user?.username?.slice(0, 2).toUpperCase()}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <span className="text-[13.5px] font-semibold font-body text-text-dark">i_am_atharv_1</span>
+                  <span className="text-[13.5px] font-semibold font-body text-text-dark">{user?.username}</span>
                 </div>
 
                 <div className="px-4">
@@ -247,8 +271,9 @@ export default function CreatePostPage() {
                       <MapPin size={16} className="text-text-dark-muted" />
                     </button>
                   )}
-
-
+                  {error && (
+                    <p className="px-4 pb-4 text-[12.5px] font-body text-red-400">{error}</p>
+                  )}
                 </div>
               </div>
             </div>

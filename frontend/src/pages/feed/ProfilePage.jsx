@@ -10,6 +10,7 @@ import {
 import { BADGES, SUPREME, isUnlocked } from '../../data/badges.js';
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import FollowListModal from '../../components/FollowListModal';
 
 const MEDIA_BASE = 'http://localhost:5000';
 
@@ -86,6 +87,7 @@ export default function ProfilePage() {
     thread: user?.username || '',
   };
   const [badgesModalOpen, setBadgesModalOpen] = useState(false);
+  const [followModal, setFollowModal] = useState(null);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [avatarViewOpen, setAvatarViewOpen] = useState(false);
   const [profileImage, setProfileImage] = useState(() => loadStoredProfile().profileImage || null);
@@ -380,12 +382,12 @@ export default function ProfilePage() {
               <span className="text-[14px] font-body text-text-dark">
                 <strong className="font-semibold">{posts.length + reels.length}</strong> posts
               </span>
-              <span className="text-[14px] font-body text-text-dark">
+              <button onClick={() => setFollowModal('followers')} className="text-[14px] font-body text-text-dark hover:underline">
                 <strong className="font-semibold">{USER.followers}</strong> followers
-              </span>
-              <span className="text-[14px] font-body text-text-dark">
+              </button>
+              <button onClick={() => setFollowModal('following')} className="text-[14px] font-body text-text-dark hover:underline">
                 <strong className="font-semibold">{USER.following}</strong> following
-              </span>
+              </button>
             </div>
 
                         <div className="text-[14px] font-body leading-relaxed mb-5 max-w-[420px]">
@@ -1307,6 +1309,13 @@ export default function ProfilePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <FollowListModal
+        open={!!followModal}
+        onClose={() => setFollowModal(null)}
+        username={USER.username}
+        type={followModal}
+      />
     </div>
   );
 }

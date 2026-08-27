@@ -20,6 +20,10 @@ export const signup = (data) => api.post('/auth/signup', data);
 export const login = (data) => api.post('/auth/login', data);
 export const forgotPassword = (data) => api.post('/auth/forgot-password', data);
 export const getMe = () => api.get('/auth/me');
+export const searchUsers = (query) => api.get('/auth/search', { params: { q: query } });
+export const getUserByUsername = (username) => api.get(`/auth/user/${username}`);
+export const getFollowersList = (username) => api.get(`/auth/user/${username}/followers`);
+export const getFollowingList = (username) => api.get(`/auth/user/${username}/following`);
 export const updateProfile = (formData) =>
   api.put('/auth/profile', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -57,5 +61,10 @@ export const updateComplaintStatus = (id, status) =>
   api.put(`/admin/complaints/${id}/status`, { status });
 export const getAllUsersAdmin = () => api.get('/admin/users');
 export const getAnalytics = () => api.get('/admin/analytics');
+
+// ---------- MESSAGES ----------
+export const getConversations = () => api.get('/messages');
+export const getConversation = (userId) => api.get(`/messages/${userId}`);
+export const sendMessage = (userId, text) => api.post(`/messages/${userId}`, { text });
 
 export default api;

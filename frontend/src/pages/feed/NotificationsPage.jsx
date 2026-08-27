@@ -1,77 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Heart, MessageCircle, UserPlus, AtSign, Megaphone, MapPin, CheckCheck,
+  Heart, MessageCircle, UserPlus, AtSign, Megaphone, CheckCheck,
 } from 'lucide-react';
+import * as api from '../../services/api';
 
-const NOTIFICATIONS = [
-  {
-    id: 1, group: 'new', type: 'like', user: 'sitabuldi_speaks', avatar: 'SS', ring: 'from-signal to-volt',
-    text: 'liked your complaint about the blocked hospital gate.', time: '2m', unread: true,
-  },
-  {
-    id: 2, group: 'new', type: 'comment', user: 'dharampeth_diaries', avatar: 'DD', ring: 'from-volt to-rose-400',
-    text: 'commented: "Same issue near my lane too, tagging the ward office."', time: '18m', unread: true,
-  },
-  {
-    id: 3, group: 'new', type: 'follow', user: 'greenpark_rwa', avatar: 'GP', ring: 'from-volt to-signal',
-    text: 'started following you.', time: '41m', unread: true,
-  },
-  {
-    id: 4, group: 'new', type: 'system', user: 'UrbanVoice', avatar: 'UV', ring: 'from-emerald-400 to-volt',
-    text: 'Your complaint "Waterlogging at Ram Nagar Crossing" was marked Resolved by Municipal Ward 5.', time: '1h', unread: true,
-  },
-  {
-    id: 5, group: 'earlier', type: 'mention', user: 'lift_watch_towerb', avatar: 'LW', ring: 'from-emerald-400 to-signal',
-    text: 'mentioned you in a reel comment.', time: '5h', unread: false,
-  },
-  {
-    id: 6, group: 'earlier', type: 'like', user: 'ananya_r', avatar: 'AR', ring: 'from-signal to-rose-400',
-    text: 'and 24 others liked your reel.', time: '9h', unread: false,
-  },
-  {
-    id: 7, group: 'earlier', type: 'comment', user: 'ward5_watch', avatar: 'W5', ring: 'from-signal to-rose-400',
-    text: 'commented: "Reported this to the corporator, awaiting reply."', time: '1d', unread: false,
-  },
-  {
-    id: 8, group: 'earlier', type: 'follow', user: 'sunrise_apartments', avatar: 'SA', ring: 'from-rose-400 to-signal',
-    text: 'started following you.', time: '2d', unread: false,
-  },
-  {
-    id: 9, group: 'earlier', type: 'system', user: 'UrbanVoice', avatar: 'UV', ring: 'from-emerald-400 to-volt',
-    text: 'You earned the "Active Reporter" badge for 10 verified complaints.', time: '3d', unread: false,
-  },
-  {
-    id: 10, group: 'earlier', type: 'like', user: 'civil_lines_watch', avatar: 'CL', ring: 'from-emerald-400 to-signal',
-    text: 'liked your comment on Green Park Society post.', time: '5d', unread: false,
-  },
-];
+const MEDIA_BASE = 'http://localhost:5000';
+const RINGS = ['from-signal to-volt', 'from-volt to-rose-400', 'from-volt to-signal', 'from-emerald-400 to-volt', 'from-emerald-400 to-signal', 'from-signal to-rose-400', 'from-rose-400 to-signal'];
 
 const TYPE_META = {
   like: { icon: Heart, color: 'text-signal', bg: 'bg-signal/15' },
   comment: { icon: MessageCircle, color: 'text-blue-500', bg: 'bg-blue-500/15' },
   follow: { icon: UserPlus, color: 'text-volt', bg: 'bg-volt/15' },
-  mention: { icon: AtSign, color: 'text-volt', bg: 'bg-volt/15' },
-  system: { icon: Megaphone, color: 'text-[#f5d576]', bg: 'bg-[#f5d576]/15' },
+  share: { icon: AtSign, color: 'text-volt', bg: 'bg-volt/15' },
+  status_update: { icon: Megaphone, color: 'text-[#f5d576]', bg: 'bg-[#f5d576]/15' },
 };
 
-function NotificationRow({ n, onRead }) {
-  const meta = TYPE_META[n.type];
+function timeAgo(dateStr) {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
+
+function NotificationRow({ n, onRead, index }) {
+  const meta = TYPE_META[n.type] || TYPE_META.status_update;
   const Icon = meta.icon;
+  const ring = RINGS[index % RINGS.length];
+  const avatarUrl = n.sender?.avatar ? `${MEDIA_BASE}${n.sender.avatar}` : null;
+  const initials = n.sender?.username?.slice(0, 2).toUpperCase() || 'UV';
 
   return (
     <motion.button
-      onClick={() => onRead(n.id)}
+      onClick={() => onRead(n._id)}
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${
-        n.unread ? 'bg-ink-800/50 hover:bg-ink-800' : 'hover:bg-ink-900/60'
+        !n.isRead ? 'bg-ink-800/50 hover:bg-ink-800' : 'hover:bg-ink-900/60'
       }`}
     >
       <div className="relative shrink-0">
-        <div className={`rounded-full bg-gradient-to-tr ${n.ring} p-[1.5px] w-11 h-11`}>
-          <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-            <span className="text-[10.5px] font-semibold text-text-dark font-body">{n.avatar}</span>
+        <div className={`rounded-full bg-gradient-to-tr ${ring} p-[1.5px] w-11 h-11`}>
+          <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[10.5px] font-semibold text-text-dark font-body">{initials}</span>
+            )}
           </div>
         </div>
         <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${meta.bg} flex items-center justify-center border-2 border-ink-950`}>
@@ -80,27 +60,44 @@ function NotificationRow({ n, onRead }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[13.5px] font-body text-text-dark leading-snug">
-          <span className="font-semibold">{n.user}</span>{' '}
-          <span className="text-text-dark-muted">{n.text}</span>
-        </p>
-        <span className="text-[11.5px] font-body text-text-dark-muted">{n.time} ago</span>
+        <p className="text-[13.5px] font-body text-text-dark leading-snug">{n.message}</p>
+        <span className="text-[11.5px] font-body text-text-dark-muted">{timeAgo(n.createdAt)}</span>
       </div>
 
-      {n.unread && <span className="w-2 h-2 rounded-full bg-signal shrink-0" />}
+      {!n.isRead && <span className="w-2 h-2 rounded-full bg-signal shrink-0" />}
     </motion.button>
   );
 }
 
 export default function NotificationsPage() {
-  const [items, setItems] = useState(NOTIFICATIONS);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const markAllRead = () => setItems((prev) => prev.map((n) => ({ ...n, unread: false })));
-  const markRead = (id) => setItems((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
+  useEffect(() => {
+    api.getNotifications()
+      .then((res) => setItems(res.data))
+      .catch((err) => console.error('Failed to load notifications', err))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const newItems = items.filter((n) => n.group === 'new');
-  const earlierItems = items.filter((n) => n.group === 'earlier');
-  const unreadCount = items.filter((n) => n.unread).length;
+  const markAllRead = async () => {
+    try {
+      await api.markNotificationsRead();
+      setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (err) {
+      console.error('Failed to mark all as read', err);
+    }
+  };
+
+  // No per-notification read endpoint on the backend yet, so opening one just
+  // reflects it as read locally for now (mark-all handles the persisted state).
+  const markRead = (id) => setItems((prev) => prev.map((n) => (n._id === id ? { ...n, isRead: true } : n)));
+
+  // "New" = last 24h, "Earlier" = older — since backend doesn't group these itself
+  const isRecent = (dateStr) => Date.now() - new Date(dateStr).getTime() < 24 * 60 * 60 * 1000;
+  const newItems = items.filter((n) => isRecent(n.createdAt));
+  const earlierItems = items.filter((n) => !isRecent(n.createdAt));
+  const unreadCount = items.filter((n) => !n.isRead).length;
 
   return (
     <div className="min-h-screen ml-[76px] bg-ink-950 px-8 py-8">
@@ -119,29 +116,33 @@ export default function NotificationsPage() {
           )}
         </div>
 
-        {newItems.length > 0 && (
+        {loading && (
+          <p className="text-[13.5px] font-body text-text-dark-muted text-center mt-20">Loading...</p>
+        )}
+
+        {!loading && newItems.length > 0 && (
           <div className="mb-6">
             <p className="text-[12.5px] font-semibold font-body text-text-dark-muted uppercase tracking-wide mb-2 px-1">New</p>
             <div className="flex flex-col gap-1">
-              {newItems.map((n) => (
-                <NotificationRow key={n.id} n={n} onRead={markRead} />
+              {newItems.map((n, i) => (
+                <NotificationRow key={n._id} n={n} onRead={markRead} index={i} />
               ))}
             </div>
           </div>
         )}
 
-        {earlierItems.length > 0 && (
+        {!loading && earlierItems.length > 0 && (
           <div>
             <p className="text-[12.5px] font-semibold font-body text-text-dark-muted uppercase tracking-wide mb-2 px-1">Earlier</p>
             <div className="flex flex-col gap-1">
-              {earlierItems.map((n) => (
-                <NotificationRow key={n.id} n={n} onRead={markRead} />
+              {earlierItems.map((n, i) => (
+                <NotificationRow key={n._id} n={n} onRead={markRead} index={newItems.length + i} />
               ))}
             </div>
           </div>
         )}
 
-        {items.length === 0 && (
+        {!loading && items.length === 0 && (
           <p className="text-[13.5px] font-body text-text-dark-muted text-center mt-20">
             No notifications yet.
           </p>

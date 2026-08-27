@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   X, Video as VideoIcon, Play, Pause, ArrowLeft, MapPin, Check,
 } from 'lucide-react';
+import * as api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const SUGGESTED_LOCATIONS = [
   'Nandanvan, Nagpur',
@@ -19,7 +21,9 @@ const SUGGESTED_LOCATIONS = [
 
 export default function CreateReelPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState('');
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [step, setStep] = useState('select'); // 'select' | 'trim' | 'details' | 'sharing' | 'shared'
@@ -66,9 +70,23 @@ export default function CreateReelPage() {
     setPlaying((v) => !v);
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     setStep('sharing');
-    setTimeout(() => setStep('shared'), 8000);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('type', 'reel');
+      formData.append('caption', caption);
+      formData.append('category', 'Other');
+      formData.append('location', selectedLocation || '');
+      formData.append('media', file);
+
+      await api.createComplaint(formData);
+      setStep('shared');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not share your reel. Please try again.');
+      setStep('details');
+    }
   };
 
   const resetAll = () => {
@@ -167,11 +185,17 @@ export default function CreateReelPage() {
               <div className="w-[60%] flex flex-col overflow-y-auto">
                 <div className="flex items-center gap-2.5 px-4 py-4">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
-                    <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-                      <span className="text-[10px] font-semibold text-text-dark font-body">AB</span>
+                    <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+                      {user?.avatar ? (
+                        <img src={`http://localhost:5000${user.avatar}`} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] font-semibold text-text-dark font-body">
+                          {user?.username?.slice(0, 2).toUpperCase()}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <span className="text-[13.5px] font-semibold font-body text-text-dark">i_am_atharv_1</span>
+                  <span className="text-[13.5px] font-semibold font-body text-text-dark">{user?.username}</span>
                 </div>
 
                 <div className="px-4">
@@ -269,6 +293,9 @@ export default function CreateReelPage() {
                   <p className="px-4 pb-4 text-[12px] font-body text-text-dark-muted leading-relaxed">
                     Your reel will also appear on your profile grid and in the Home Feed.
                   </p>
+                  {error && (
+                    <p className="px-4 pb-4 text-[12.5px] font-body text-red-400">{error}</p>
+                  )}
                 </div>
               </div>
             </div>
