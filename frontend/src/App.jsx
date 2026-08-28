@@ -1,4 +1,5 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext.jsx';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import Sidebar from './components/Sidebar.jsx';
@@ -38,6 +39,7 @@ const APP_ROUTES = [
 ];
 export default function App() {
   const { pathname } = useLocation();
+  const { isAuthenticated, loading } = useAuth();
   const isAppRoute = APP_ROUTES.some((route) => pathname.startsWith(route));
   const isAuthRoute = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
 
@@ -55,6 +57,10 @@ export default function App() {
   }
 
   if (isAppRoute) {
+    if (loading) return null;
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
     return (
       <>
         <IntroLoader title="Urban's Reel" subtitle="Solve your problems with UrbanVoice" />

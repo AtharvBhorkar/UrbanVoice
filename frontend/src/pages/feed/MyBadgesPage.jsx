@@ -1,16 +1,18 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Crown, Sparkles, Lock, CheckCircle2, TrendingUp, Award } from 'lucide-react';
 import {
-  BADGES, SUPREME, TIER_ORDER, CURRENT_POINTS, HAS_POSTED, isUnlocked, fmt,
+  BADGES, SUPREME, TIER_ORDER, isUnlocked, fmt,
 } from '../../data/badges.js';
+import { useAuth } from '../../context/AuthContext';
+import * as api from '../../services/api';
 
-function BadgeCard({ badge, index }) {
-  const unlocked = isUnlocked(badge);
+function BadgeCard({ badge, index, currentPoints, hasPosted }) {
+  const unlocked = isUnlocked(badge, currentPoints, hasPosted);
   const Icon = badge.icon;
   const progress = badge.special === 'post'
-    ? (HAS_POSTED ? 100 : 0)
-    : Math.min(100, (CURRENT_POINTS / badge.points) * 100);
+    ? (hasPosted ? 100 : 0)
+    : Math.min(100, (currentPoints / badge.points) * 100);
 
   return (
     <motion.div
@@ -62,7 +64,7 @@ function BadgeCard({ badge, index }) {
             />
           </div>
           <span className="text-[10px] font-body text-text-dark-muted mt-1">
-            {fmt(Math.min(CURRENT_POINTS, badge.points))} / {fmt(badge.points)}
+            {fmt(Math.min(currentPoints, badge.points))} / {fmt(badge.points)}
           </span>
         </>
       )}
@@ -71,12 +73,23 @@ function BadgeCard({ badge, index }) {
 }
 
 export default function MyBadgesPage() {
+  const { user } = useAuth();
+  const [hasPosted, setHasPosted] = useState(false);
+  const currentPoints = user?.points || 0;
+
+  useEffect(() => {
+    if (!user?._id) return;
+    api.getComplaintsByUser(user._id)
+      .then((res) => setHasPosted((res.data?.length || 0) > 0))
+      .catch(() => setHasPosted(false));
+  }, [user?._id]);
+
   const unlockedCount = useMemo(
-    () => BADGES.filter(isUnlocked).length + (isUnlocked({ ...SUPREME, points: SUPREME.points }) ? 0 : 0),
-    []
+    () => BADGES.filter((b) => isUnlocked(b, currentPoints, hasPosted)).length,
+    [currentPoints, hasPosted]
   );
-  const supremeUnlocked = CURRENT_POINTS >= SUPREME.points;
-  const supremeProgress = Math.min(100, (CURRENT_POINTS / SUPREME.points) * 100);
+  const supremeUnlocked = currentPoints >= SUPREME.points;
+  const supremeProgress = Math.min(100, (currentPoints / SUPREME.points) * 100);
 
   const grouped = TIER_ORDER.map((tierName) => ({
     tierName,
@@ -94,7 +107,7 @@ export default function MyBadgesPage() {
           </div>
           <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-ink-900 border border-ink-700">
             <TrendingUp size={13} className="text-[#f5d576]" />
-            <span className="text-[12.5px] font-semibold font-body text-[#f5d576]">{fmt(CURRENT_POINTS)} points</span>
+            <span className="text-[12.5px] font-semibold font-body text-[#f5d576]">{fmt(currentPoints)} points</span>
           </div>
         </div>
         <p className="text-[13.5px] font-body text-text-dark-muted mb-8">
@@ -163,7 +176,7 @@ export default function MyBadgesPage() {
                 />
               </div>
               <span className="text-[11px] font-body text-text-dark-muted mt-1 block">
-                {fmt(Math.min(CURRENT_POINTS, SUPREME.points))} / {fmt(SUPREME.points)} points
+                {fmt(Math.min(currentPoints, SUPREME.points))} / {fmt(SUPREME.points)} points
               </span>
             </div>
           </div>
@@ -177,7 +190,7 @@ export default function MyBadgesPage() {
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {group.items.map((badge, i) => (
-                <BadgeCard key={badge.level} badge={badge} index={i} />
+                <BadgeCard key={badge.level} badge={badge} index={i} currentPoints={currentPoints} hasPosted={hasPosted} />
               ))}
             </div>
           </div>

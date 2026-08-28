@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Heart, MessageCircle, Bookmark, Send, Volume2, VolumeX, Play, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Heart, MessageCircle, Send, Volume2, VolumeX, Play, MapPin } from 'lucide-react';
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import CommentsModal from '../../components/CommentsModal';
 
 const MEDIA_BASE = 'http://localhost:5000';
 
-function ReelItem({ item, currentUserId, onToggleLike, onToggleSave, isSaved }) {
+function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBump }) {
+  const navigate = useNavigate();
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [commentCount, setCommentCount] = useState(0);
@@ -77,7 +80,10 @@ function ReelItem({ item, currentUserId, onToggleLike, onToggleSave, isSaved }) 
         <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-10" />
 
         <div className="absolute left-4 right-16 bottom-8 text-text-dark z-10">
-          <div className="flex items-center gap-2 mb-2">
+          <button
+            onClick={() => navigate(`/profile/${item.user?.username}`)}
+            className="flex items-center gap-2 mb-2"
+          >
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">
               <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                 {item.user?.avatar ? (
@@ -89,8 +95,8 @@ function ReelItem({ item, currentUserId, onToggleLike, onToggleSave, isSaved }) 
                 )}
               </div>
             </div>
-            <span className="text-[13.5px] font-semibold font-body">{item.user?.username}</span>
-          </div>
+            <span className="text-[13.5px] font-semibold font-body hover:underline">{item.user?.username}</span>
+          </button>
           <div className="flex items-center gap-1 text-[12px] text-text-dark-muted font-body mb-1.5">
             <MapPin size={11} />
             {item.location}
@@ -104,12 +110,9 @@ function ReelItem({ item, currentUserId, onToggleLike, onToggleSave, isSaved }) 
           <Heart size={26} className={liked ? 'text-signal fill-signal' : 'text-text-dark'} />
           <span className="text-[11px] font-body text-text-dark-muted">{likeCount}</span>
         </button>
-        <button className="flex flex-col items-center gap-1">
+        <button onClick={() => onOpenComments(item._id)} className="flex flex-col items-center gap-1">
           <MessageCircle size={26} className="text-text-dark" />
-          <span className="text-[11px] font-body text-text-dark-muted">{commentCount}</span>
-        </button>
-        <button onClick={() => onToggleSave(item._id)}>
-          <Bookmark size={24} className={isSaved ? 'text-volt fill-volt' : 'text-text-dark'} />
+          <span className="text-[11px] font-body text-text-dark-muted">{commentCount + (commentBump || 0)}</span>
         </button>
         <button
           onClick={async () => {
@@ -128,17 +131,14 @@ export default function ReelsPage() {
   const { user } = useAuth();
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [savedIds, setSavedIds] = useState([]);
+  const [commentsOpenFor, setCommentsOpenFor] = useState(null);
+  const [commentBumps, setCommentBumps] = useState({});
 
   useEffect(() => {
     api.getComplaints('reel')
       .then((res) => setReels(res.data))
       .catch((err) => console.error('Failed to load reels', err))
       .finally(() => setLoading(false));
-
-    api.getMe()
-      .then((res) => setSavedIds(res.data.savedIssues || []))
-      .catch(() => {});
   }, []);
 
   const handleToggleLike = async (id) => {
@@ -156,17 +156,6 @@ export default function ReelsPage() {
       );
     } catch (err) {
       console.error('Like failed', err);
-    }
-  };
-
-  const handleToggleSave = async (id) => {
-    try {
-      await api.toggleSave(id);
-      setSavedIds((prev) =>
-        prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
-      );
-    } catch (err) {
-      console.error('Save failed', err);
     }
   };
 
@@ -194,10 +183,22 @@ export default function ReelsPage() {
           item={item}
           currentUserId={user?._id}
           onToggleLike={handleToggleLike}
-          onToggleSave={handleToggleSave}
-          isSaved={savedIds.includes(item._id)}
+          onOpenComments={setCommentsOpenFor}
+          commentBump={commentBumps[item._id]}
         />
       ))}
+
+      <CommentsModal
+        complaintId={commentsOpenFor}
+        open={!!commentsOpenFor}
+        onClose={() => setCommentsOpenFor(null)}
+        onCommentAdded={() =>
+          setCommentBumps((prev) => ({
+            ...prev,
+            [commentsOpenFor]: (prev[commentsOpenFor] || 0) + 1,
+          }))
+        }
+      />
     </div>
   );
 }

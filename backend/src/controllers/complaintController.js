@@ -7,7 +7,7 @@ const checkAndUnlockBadges = require('../utils/checkBadges');
 // @route   POST /api/complaints
 const createComplaint = async (req, res) => {
   try {
-    const { type, caption, category, location, lat, lng } = req.body;
+    const { type, caption, category, location, lat, lng, isAnonymous } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ message: 'Media file is required' });
@@ -15,6 +15,21 @@ const createComplaint = async (req, res) => {
 
     const mediaType = req.file.mimetype.startsWith('video') ? 'video' : 'image';
     const mediaUrl = `/uploads/${req.file.filename}`;
+
+    // department category se derive hota hai (General fallback)
+    const departmentMap = {
+      Water: 'Water',
+      Electricity: 'Electricity',
+      Sanitation: 'Sanitation',
+      Roads: 'Roads',
+      Civic: 'Civic',
+      Society: 'Society',
+    };
+    const department = departmentMap[category] || 'General';
+
+    // SLA: default 7 din ka expected resolution window
+    const expectedResolutionDate = new Date();
+    expectedResolutionDate.setDate(expectedResolutionDate.getDate() + 7);
 
     const complaint = await Complaint.create({
       user: req.user._id,
@@ -24,10 +39,23 @@ const createComplaint = async (req, res) => {
       mediaType,
       category,
       location,
+      department,
       coordinates: lat && lng ? { lat, lng } : undefined,
+      isAnonymous: isAnonymous === 'true' || isAnonymous === true,
+      expectedResolutionDate,
+      statusHistory: [{ status: 'Pending', changedBy: req.user._id, note: 'Complaint filed' }],
     });
 
-    complaint.priorityScore = calculatePriorityScore(complaint);
+    // isi area/category mein pehle se kitni complaints hain (repeat-issue bonus ke liye)
+    const repeatCountInArea = location
+      ? await Complaint.countDocuments({
+          _id: { $ne: complaint._id },
+          category,
+          location,
+        })
+      : 0;
+
+    complaint.priorityScore = calculatePriorityScore(complaint, repeatCountInArea);
     await complaint.save();
 
     await checkAndUnlockBadges(req.user);
@@ -152,6 +180,39 @@ const toggleSave = async (req, res) => {
   }
 };
 
+const submitFeedback = async (req, res) => {
+  try {
+    const { rating, comment } = req.body; // rating: 'satisfied' | 'not_satisfied'
+    const complaint = await Complaint.findById(req.params.id);
+
+    if (!complaint) {
+      return res.status(404).json({ message: 'Not found' });
+    }
+    if (complaint.status !== 'Resolved') {
+      return res.status(400).json({ message: 'Feedback sirf resolved complaints par diya ja sakta hai' });
+    }
+    if (complaint.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Sirf complaint filer feedback de sakta hai' });
+    }
+
+    complaint.feedback = { rating, comment };
+
+    if (rating === 'not_satisfied') {
+      complaint.status = 'In Progress';
+      complaint.statusHistory.push({
+        status: 'In Progress',
+        changedBy: req.user._id,
+        note: `Reopened — citizen unsatisfied: ${comment || 'no comment'}`,
+      });
+    }
+
+    await complaint.save();
+    res.status(200).json(complaint);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createComplaint,
   getComplaints,
@@ -159,4 +220,5 @@ module.exports = {
   getComplaintsByUser,
   toggleLike,
   toggleSave,
+  submitFeedback,
 };

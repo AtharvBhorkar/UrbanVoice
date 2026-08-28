@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import CommentsModal from '../../components/CommentsModal';
 import {
   Heart, MessageCircle, Send, Volume2, VolumeX, MapPin, Building2, Home as HomeIcon, MoreHorizontal, Play,
   Flag, EyeOff, Share2, Link2, Check, Crown, Shield, Rocket,
@@ -144,7 +145,7 @@ function StoryRing({ name, ring, rank }) {
   );
 }
 
-function FeedCard({ item, currentUserId, showToast, onToggleLike }) {
+function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments, commentBump }) {
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [hidden, setHidden] = useState(false);
@@ -294,7 +295,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike }) {
           <button onClick={() => onToggleLike(item._id)}>
             <Heart size={22} className={liked ? 'text-signal fill-signal' : 'text-text-dark'} />
           </button>
-          <button><MessageCircle size={22} className="text-text-dark" /></button>
+          <button onClick={() => onOpenComments(item._id)}><MessageCircle size={22} className="text-text-dark" /></button>
           <button><Send size={20} className="text-text-dark" /></button>
         </div>
       </div>
@@ -305,9 +306,9 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike }) {
           <span className="font-semibold">{item.user?.username}</span>{' '}
           <span className="text-text-dark-muted">{item.caption}</span>
         </p>
-        {commentCount !== null && commentCount > 0 && (
+        {commentCount !== null && (commentCount + (commentBump || 0)) > 0 && (
           <p className="text-[12.5px] font-body text-text-dark-muted mt-1">
-            View all {commentCount} comments
+            View all {commentCount + (commentBump || 0)} comments
           </p>
         )}
       </div>
@@ -318,6 +319,8 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike }) {
 export default function HomeFeedPage() {
   const { user } = useAuth();
   const [toast, setToast] = useState('');
+  const [commentsOpenFor, setCommentsOpenFor] = useState(null);
+  const [commentBumps, setCommentBumps] = useState({});
   const [feedItems, setFeedItems] = useState([]);
   const [leaders, setLeaders] = useState([]);
   const [topReporters, setTopReporters] = useState([]);
@@ -415,7 +418,7 @@ export default function HomeFeedPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <FeedCard item={item} currentUserId={user?._id} showToast={showToast} onToggleLike={handleToggleLike} />
+                <FeedCard item={item} currentUserId={user?._id} showToast={showToast} onToggleLike={handleToggleLike} onOpenComments={setCommentsOpenFor} commentBump={commentBumps[item._id]} />
               </motion.div>
             ))}
           </div>
@@ -476,6 +479,18 @@ export default function HomeFeedPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CommentsModal
+        complaintId={commentsOpenFor}
+        open={!!commentsOpenFor}
+        onClose={() => setCommentsOpenFor(null)}
+        onCommentAdded={() =>
+          setCommentBumps((prev) => ({
+            ...prev,
+            [commentsOpenFor]: (prev[commentsOpenFor] || 0) + 1,
+          }))
+        }
+      />
     </div>
   );
 }

@@ -12,6 +12,16 @@ const complaintSchema = new mongoose.Schema(
       enum: ['post', 'reel'],
       required: true,
     },
+    ticketId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    department: {
+      type: String,
+      enum: ['Water', 'Electricity', 'Sanitation', 'Roads', 'Civic', 'Society', 'General'],
+      default: 'General',
+    },
     caption: {
       type: String,
       trim: true,
@@ -48,6 +58,38 @@ const complaintSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    expectedResolutionDate: {
+      type: Date,
+    },
+    resolutionNote: {
+      type: String,
+      trim: true,
+    },
+    resolutionImage: {
+      type: String,
+    },
+    statusHistory: [
+      {
+        status: {
+          type: String,
+          enum: ['Pending', 'In Progress', 'Resolved', 'Rejected'],
+        },
+        changedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+        note: { type: String, trim: true },
+        date: { type: Date, default: Date.now },
+      },
+    ],
+    isAnonymous: {
+      type: Boolean,
+      default: false,
+    },
+    feedback: {
+      rating: { type: String, enum: ['satisfied', 'not_satisfied'] },
+      comment: { type: String, trim: true },
+    },
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -69,5 +111,14 @@ const complaintSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+complaintSchema.pre('save', async function (next) {
+  if (this.isNew && !this.ticketId) {
+    const year = new Date().getFullYear();
+    const count = await mongoose.model('Complaint').countDocuments();
+    this.ticketId = `UV-${year}-${String(count + 1).padStart(5, '0')}`;
+  }
+  next();
+});
 
 module.exports = mongoose.model('Complaint', complaintSchema);

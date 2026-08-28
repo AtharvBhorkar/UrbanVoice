@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, ArrowRight, MapPin, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, MapPin, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import * as api from '../../services/api';
 import prob1 from '../../assets/prob1.png';
 import prob2 from '../../assets/prob2.png';
 import prob3 from '../../assets/prob3.png';
@@ -17,6 +18,7 @@ const HERO_IMAGES = [prob1, prob2, prob3, prob4, prob5, prob6, prob7, prob8];
 export default function ForgotPasswordPage() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [submitted, setSubmitted] = useState(false);
@@ -33,17 +35,21 @@ export default function ForgotPasswordPage() {
         e.preventDefault();
         setError('');
 
-        if (!email) {
-            setError('Enter the email linked to your account.');
+        if (!email || !newPassword) {
+            setError('Enter your email and a new password.');
+            return;
+        }
+        if (newPassword.length < 6) {
+            setError('Password must be at least 6 characters.');
             return;
         }
 
         setLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 700));
+            await api.forgotPassword({ email, newPassword });
             setSubmitted(true);
         } catch (err) {
-            setError('Could not send the reset link. Please try again.');
+            setError(err.response?.data?.message || 'Could not reset your password. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -83,7 +89,7 @@ export default function ForgotPasswordPage() {
                                     Forgot your password?
                                 </h1>
                                 <p className="font-body text-text-dark-muted mt-3 text-[15px]">
-                                    No worries — enter your email and we'll send you a link to reset it.
+                                    No worries — enter your email and set a new password below.
                                 </p>
 
                                 <div className="mt-9 rounded-2xl border border-ink-700 bg-ink-900/60 p-6 sm:p-7">
@@ -98,6 +104,16 @@ export default function ForgotPasswordPage() {
                                                 className="w-full rounded-xl bg-ink-800 border border-ink-600 pl-11 pr-4 py-3 font-body text-sm text-text-dark placeholder:text-text-dark-muted focus:outline-none focus:border-signal transition-colors"
                                             />
                                         </div>
+                                        <div className="relative">
+                                            <Lock size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dark-muted" />
+                                            <input
+                                                type="password"
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                placeholder="Enter new password"
+                                                className="w-full rounded-xl bg-ink-800 border border-ink-600 pl-11 pr-4 py-3 font-body text-sm text-text-dark placeholder:text-text-dark-muted focus:outline-none focus:border-signal transition-colors"
+                                            />
+                                        </div>
 
                                         {error && (
                                             <p className="text-sm font-body text-red-400">{error}</p>
@@ -108,7 +124,7 @@ export default function ForgotPasswordPage() {
                                             disabled={loading}
                                             className="w-full flex items-center justify-center gap-2 rounded-xl bg-volt text-ink-950 font-body font-semibold py-3 hover:bg-volt-dim transition-colors disabled:opacity-60"
                                         >
-                                            {loading ? 'Sending link…' : 'Send reset link'}
+                                            {loading ? 'Resetting…' : 'Reset password'}
                                             {!loading && <ArrowRight size={16} />}
                                         </button>
                                     </form>
@@ -133,12 +149,10 @@ export default function ForgotPasswordPage() {
                                         <CheckCircle2 size={28} className="text-volt" />
                                     </div>
                                     <h1 className="font-display text-2xl sm:text-3xl text-text-dark mt-5 leading-[1.15]">
-                                        Check your inbox
+                                        Password reset!
                                     </h1>
                                     <p className="font-body text-text-dark-muted mt-3 text-[15px]">
-                                        We've sent a password reset link to{' '}
-                                        <span className="text-text-dark font-medium">{email}</span>.
-                                        It may take a minute to arrive.
+                                        Your password has been changed successfully. Log in with your new password.
                                     </p>
 
                                     <button
@@ -155,7 +169,7 @@ export default function ForgotPasswordPage() {
                                         onClick={() => setSubmitted(false)}
                                         className="w-full mt-3 text-sm font-body text-text-dark-muted hover:text-volt transition-colors"
                                     >
-                                        Didn't get it? Try another email
+                                        Use a different email
                                     </button>
                                 </div>
                             </motion.div>

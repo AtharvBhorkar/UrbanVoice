@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Password is required'],
       minlength: 6,
-      select: false, // password kabhi query mein by default nahi aayega (safety)
+      select: false, 
     },
     avatar: {
       type: String,
@@ -55,6 +55,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['user', 'admin'],
       default: 'user',
+    },
+    department: {
+      type: String,
+      enum: ['Water', 'Electricity', 'Sanitation', 'Roads', 'Civic', 'Society', 'General'],
+      default: 'General',
     },
     followers: [
       {
@@ -84,7 +89,7 @@ const userSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true } // createdAt, updatedAt auto add ho jayenge
+  { timestamps: true }
 );
 
 module.exports = mongoose.model('User', userSchema);

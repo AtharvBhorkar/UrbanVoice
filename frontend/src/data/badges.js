@@ -1,9 +1,5 @@
 import { Award, Shield, Crown, Gem, Star, Flame, Diamond, Zap } from 'lucide-react';
 
-// ---- Mock current user progress ----
-export const CURRENT_POINTS = 15420;
-export const HAS_POSTED = true;
-
 // ---- helpers ----
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII'];
 
@@ -79,7 +75,7 @@ export const SUPREME = {
 
 export const TIER_ORDER = ['Starter', 'Bronze Voice', 'Silver Voice', 'Gold Voice', 'Emerald Voice', 'Sapphire Voice', 'Ruby Voice', 'Platinum Voice'];
 
-export function isUnlocked(badge) {
-  if (badge.special === 'post') return HAS_POSTED;
-  return CURRENT_POINTS >= badge.points;
+export function isUnlocked(badge, currentPoints, hasPosted) {
+  if (badge.special === 'post') return hasPosted;
+  return currentPoints >= badge.points;
 }
