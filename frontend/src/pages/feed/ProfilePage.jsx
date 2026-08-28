@@ -109,8 +109,6 @@ export default function ProfilePage() {
   const [editingPostCaption, setEditingPostCaption] = useState(false);
   const [postCaptionDraft, setPostCaptionDraft] = useState('');
   const [openReelIndex, setOpenReelIndex] = useState(null);
-  const [reelLiked, setReelLiked] = useState(false);
-  const [reelSaved, setReelSaved] = useState(false);
   const [reelMuted, setReelMuted] = useState(true);
   const [reelOptionsOpen, setReelOptionsOpen] = useState(false);
   const [reels, setReels] = useState([]);
@@ -121,6 +119,59 @@ export default function ProfilePage() {
     api.getComplaintsByUser(user._id, 'post').then((res) => setPosts(res.data)).catch(() => {});
     api.getComplaintsByUser(user._id, 'reel').then((res) => setReels(res.data)).catch(() => {});
   }, [user?._id]);
+
+  const [reelComments, setReelComments] = useState([]);
+  const [reelCommentDraft, setReelCommentDraft] = useState('');
+
+  useEffect(() => {
+    if (openReelIndex === null || !reels[openReelIndex]) return;
+    api.getComments(reels[openReelIndex]._id)
+      .then((res) => setReelComments(res.data))
+      .catch(() => setReelComments([]));
+  }, [openReelIndex, reels]);
+
+  const handleReelLikeToggle = async () => {
+    const reel = reels[openReelIndex];
+    if (!reel) return;
+    try {
+      await api.toggleLike(reel._id);
+      setReels((prev) =>
+        prev.map((r) => {
+          if (r._id !== reel._id) return r;
+          const already = r.likes.includes(user._id);
+          return { ...r, likes: already ? r.likes.filter((id) => id !== user._id) : [...r.likes, user._id] };
+        })
+      );
+    } catch (err) {
+      console.error('Like failed', err);
+    }
+  };
+
+  const handleReelCommentSend = async () => {
+    const text = reelCommentDraft.trim();
+    const reel = reels[openReelIndex];
+    if (!text || !reel) return;
+    try {
+      const res = await api.addComment(reel._id, text);
+      setReelComments((prev) => [...prev, res.data]);
+      setReelCommentDraft('');
+    } catch (err) {
+      console.error('Comment failed', err);
+    }
+  };
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return `${Math.floor(days / 7)}w ago`;
+  }
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [editingCaption, setEditingCaption] = useState(false);
   const [captionDraft, setCaptionDraft] = useState('');
@@ -532,9 +583,19 @@ export default function ProfilePage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.05 }}
-                onClick={() => { setOpenReelIndex(i); setReelLiked(false); setReelSaved(false); }}
+                onClick={() => setOpenReelIndex(i)}
                 className="group relative aspect-[9/16] bg-ink-800 cursor-pointer overflow-hidden"
               >
+                {r.mediaUrl && (
+                  <video
+                    src={`${MEDIA_BASE}${r.mediaUrl}`}
+                    muted
+                    loop
+                    playsInline
+                    autoPlay
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
                 <Clapperboard size={14} className="absolute top-2 left-2 text-text-dark/80 z-10" />
 
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2.5 pt-8 pb-2.5 flex items-center justify-between z-10">
@@ -583,7 +644,7 @@ export default function ProfilePage() {
 
             {openReelIndex > 0 && (
               <button
-                onClick={(e) => { e.stopPropagation(); setOpenReelIndex((i) => i - 1); setReelLiked(false); setReelSaved(false); setEditingCaption(false); }}
+                onClick={(e) => { e.stopPropagation(); setOpenReelIndex((i) => i - 1); setEditingCaption(false); }}
                 aria-label="Previous reel"
                 className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-ink-900/80 border border-ink-700 flex items-center justify-center text-text-dark hover:bg-ink-800 transition-colors"
               >
@@ -592,7 +653,7 @@ export default function ProfilePage() {
             )}
             {openReelIndex < reels.length - 1 && (
               <button
-                onClick={(e) => { e.stopPropagation(); setOpenReelIndex((i) => i + 1); setReelLiked(false); setReelSaved(false); setEditingCaption(false); }}
+                onClick={(e) => { e.stopPropagation(); setOpenReelIndex((i) => i + 1); setEditingCaption(false); }}
                 aria-label="Next reel"
                 className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-ink-900/80 border border-ink-700 flex items-center justify-center text-text-dark hover:bg-ink-800 transition-colors"
               >
@@ -608,8 +669,17 @@ export default function ProfilePage() {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-[980px] h-[85vh] max-h-[720px] rounded-2xl border border-ink-800 bg-ink-900 overflow-hidden flex"
             >
-              <div className={`relative w-[52%] shrink-0 bg-gradient-to-br ${reels[openReelIndex].tone} flex items-center justify-center`}>
-                <Clapperboard size={48} strokeWidth={1.2} className="text-text-dark/50" />
+              <div className="relative w-[52%] shrink-0 bg-black flex items-center justify-center overflow-hidden">
+                {reels[openReelIndex].mediaUrl && (
+                  <video
+                    src={`${MEDIA_BASE}${reels[openReelIndex].mediaUrl}`}
+                    autoPlay
+                    loop
+                    muted={reelMuted}
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                )}
                 <button
                   onClick={() => setReelMuted((v) => !v)}
                   className="absolute bottom-4 right-4 w-9 h-9 rounded-full bg-ink-950/60 flex items-center justify-center text-text-dark"
@@ -679,11 +749,11 @@ export default function ProfilePage() {
                     </p>
                   )}
 
-                  {reels[openReelIndex].commentsList?.length > 0 && (
+                  {reelComments.length > 0 && (
                     <div className="flex flex-col gap-3 mt-5">
-                      {reels[openReelIndex].commentsList.map((c, i) => (
-                        <p key={i} className="text-[13.5px] font-body text-text-dark leading-relaxed">
-                          <span className="font-semibold">{c.user}</span>{' '}
+                      {reelComments.map((c) => (
+                        <p key={c._id} className="text-[13.5px] font-body text-text-dark leading-relaxed">
+                          <span className="font-semibold">{c.user?.username}</span>{' '}
                           <span className="text-text-dark-muted">{c.text}</span>
                         </p>
                       ))}
@@ -694,13 +764,10 @@ export default function ProfilePage() {
                 <div className="shrink-0 border-t border-ink-800">
                   <div className="flex items-center justify-between px-4 pt-3">
                     <div className="flex items-center gap-4">
-                      <button onClick={() => setReelLiked((v) => !v)} aria-label="Like">
-                        <Heart size={22} className={reelLiked ? 'text-signal fill-signal' : 'text-text-dark'} />
+                      <button onClick={handleReelLikeToggle} aria-label="Like">
+                        <Heart size={22} className={reels[openReelIndex].likes?.includes(user._id) ? 'text-signal fill-signal' : 'text-text-dark'} />
                       </button>
-                      <button
-                        aria-label="Comment"
-                        onClick={() => commentInputRef.current?.focus({ preventScroll: false })}
-                      >
+                      <button aria-label="Comment">
                         <MessageCircle size={22} className="text-text-dark" />
                       </button>
                       <button aria-label="Share" onClick={handleShareReel}>
@@ -711,23 +778,22 @@ export default function ProfilePage() {
 
                   <div className="px-4 pt-2.5">
                     <p className="text-[13px] font-semibold font-body text-text-dark">
-                      {reelLiked ? '226' : '225'} likes
+                      {reels[openReelIndex].likes?.length || 0} likes
                     </p>
-                    <p className="text-[11px] font-body text-text-dark-muted mt-0.5">{reels[openReelIndex].time}</p>
+                    <p className="text-[11px] font-body text-text-dark-muted mt-0.5">{timeAgo(reels[openReelIndex].createdAt)}</p>
                   </div>
 
                   <div className="flex items-center gap-3 px-4 py-3 mt-1">
                     <input
-                      ref={commentInputRef}
-                      value={commentDraft}
-                      onChange={(e) => setCommentDraft(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(); }}
+                      value={reelCommentDraft}
+                      onChange={(e) => setReelCommentDraft(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleReelCommentSend(); }}
                       placeholder="Add a comment..."
                       className="flex-1 bg-transparent text-[13px] font-body text-text-dark placeholder:text-text-dark-muted focus:outline-none"
                     />
                     <button
-                      onClick={handlePostComment}
-                      disabled={!commentDraft.trim()}
+                      onClick={handleReelCommentSend}
+                      disabled={!reelCommentDraft.trim()}
                       className="text-[13px] font-semibold font-body text-blue-500 hover:text-blue-400 disabled:text-text-dark-muted disabled:cursor-not-allowed transition-colors shrink-0"
                     >
                       Post

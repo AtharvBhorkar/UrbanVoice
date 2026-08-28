@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -95,13 +96,14 @@ function PostOptionsMenu({ onReport, onNotInterested, onShare, onCopyLink }) {
 }
 
 function StoryRing({ name, ring, rank }) {
+  const navigate = useNavigate();
   const medal = RANK_MEDALS[rank];
   const isCenter = rank === 1;
   const crownColor =
     rank === 1 ? 'text-[#f5d576]' : rank === 2 ? 'text-[#d9d9e3]' : rank === 3 ? 'text-[#e0a458]' : 'text-text-dark-muted';
 
   return (
-    <div className={`flex flex-col items-center gap-1.5 shrink-0 ${isCenter ? 'w-20' : 'w-16'}`}>
+    <button onClick={() => navigate(`/profile/${name}`)} className={`flex flex-col items-center gap-1.5 shrink-0 ${isCenter ? 'w-20' : 'w-16'}`}>
       <div className="relative pt-3">
         <Crown
           size={isCenter ? 20 : rank <= 3 ? 16 : 13}
@@ -141,20 +143,46 @@ function StoryRing({ name, ring, rank }) {
       <span className={`text-text-dark-muted font-body truncate w-full text-center ${isCenter ? 'text-[12px] font-semibold text-text-dark' : 'text-[11px]'}`}>
         {name}
       </span>
-    </div>
+    </button>
   );
 }
 
 function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments, commentBump }) {
+  const navigate = useNavigate();
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [hidden, setHidden] = useState(false);
   const [commentCount, setCommentCount] = useState(null);
+  const [shareCount, setShareCount] = useState(item.shares || 0);
+  const [sharing, setSharing] = useState(false);
   const videoRef = useRef(null);
   const Icon = item.type === 'reel' ? HomeIcon : Building2;
 
   const liked = item.likes?.includes(currentUserId);
   const likeCount = item.likes?.length || 0;
+
+  const handleShareClick = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const res = await api.addShare(item._id).catch(() => null);
+      if (res) setShareCount(res.data.shares);
+
+      const shareUrl = `${window.location.origin}/feed`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'UrbanVoice Post', text: item.caption, url: shareUrl });
+        } catch {
+          // user cancelled native share sheet
+        }
+      } else {
+        await navigator.clipboard?.writeText(shareUrl);
+        showToast('Link copied — share it anywhere.');
+      }
+    } finally {
+      setSharing(false);
+    }
+  };
 
   useEffect(() => {
     api.getComments(item._id)
@@ -197,7 +225,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
+        <button onClick={() => navigate(`/profile/${item.user?.username}`)} className="flex items-center gap-3 text-left">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">
             <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
               {item.user?.avatar ? (
@@ -211,7 +239,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[13.5px] font-semibold font-body text-text-dark">{item.user?.username}</span>
+              <span className="text-[13.5px] font-semibold font-body text-text-dark hover:underline">{item.user?.username}</span>
               <span className="text-text-dark-muted">·</span>
               <span className="text-[12.5px] text-text-dark-muted font-body">{timeAgo(item.createdAt)}</span>
             </div>
@@ -220,7 +248,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
               {item.location}
             </div>
           </div>
-        </div>
+        </button>
         <PostOptionsMenu
           onReport={() => showToast('Reported. Our team will review it.')}
           onNotInterested={() => setHidden(true)}
@@ -296,14 +324,17 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
             <Heart size={22} className={liked ? 'text-signal fill-signal' : 'text-text-dark'} />
           </button>
           <button onClick={() => onOpenComments(item._id)}><MessageCircle size={22} className="text-text-dark" /></button>
-          <button><Send size={20} className="text-text-dark" /></button>
+          <button onClick={handleShareClick} disabled={sharing}><Send size={20} className="text-text-dark" /></button>
         </div>
+        {shareCount > 0 && (
+          <span className="text-[12px] font-body text-text-dark-muted">{shareCount} shares</span>
+        )}
       </div>
 
       <div className="px-4 pt-2 pb-4">
         <p className="text-[13.5px] font-semibold font-body text-text-dark">{likeCount} likes</p>
         <p className="text-[13.5px] font-body text-text-dark mt-1 leading-relaxed">
-          <span className="font-semibold">{item.user?.username}</span>{' '}
+          <button onClick={() => navigate(`/profile/${item.user?.username}`)} className="font-semibold hover:underline">{item.user?.username}</button>{' '}
           <span className="text-text-dark-muted">{item.caption}</span>
         </p>
         {commentCount !== null && (commentCount + (commentBump || 0)) > 0 && (
@@ -317,6 +348,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
 }
 
 export default function HomeFeedPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [toast, setToast] = useState('');
   const [commentsOpenFor, setCommentsOpenFor] = useState(null);
@@ -446,15 +478,17 @@ export default function HomeFeedPage() {
           <div className="flex flex-col gap-3.5">
             {topReporters.map((r, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
-                  <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-                    <span className="text-[10px] font-semibold text-text-dark font-body">{r.avatar}</span>
+                <button onClick={() => navigate(`/profile/${r.name}`)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
+                    <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold text-text-dark font-body">{r.avatar}</span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold font-body text-text-dark truncate">{r.name}</p>
-                  <p className="text-[11.5px] text-text-dark-muted font-body truncate">{r.sub}</p>
-                </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold font-body text-text-dark truncate hover:underline">{r.name}</p>
+                    <p className="text-[11.5px] text-text-dark-muted font-body truncate">{r.sub}</p>
+                  </div>
+                </button>
                 <button
                   onClick={() => handleFollow(r.userId)}
                   className="text-[12.5px] font-semibold font-body text-signal shrink-0"

@@ -1,22 +1,52 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Send, Volume2, VolumeX, Play, MapPin } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import CommentsModal from '../../components/CommentsModal';
 
 const MEDIA_BASE = 'http://localhost:5000';
 
-function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBump }) {
+function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBump, onShare }) {
   const navigate = useNavigate();
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [commentCount, setCommentCount] = useState(0);
   const [viewRegistered, setViewRegistered] = useState(false);
+  const [shareCount, setShareCount] = useState(item.shares || 0);
+  const [hasShared, setHasShared] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const videoRef = useRef(null);
 
   const liked = item.likes?.includes(currentUserId);
   const likeCount = item.likes?.length || 0;
+
+  const handleShareClick = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const res = await api.addShare(item._id).catch(() => null);
+      if (res) {
+        setShareCount(res.data.shares);
+        setHasShared(true);
+      }
+
+      const shareUrl = `${window.location.origin}/reels`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'UrbanVoice Reel', text: item.caption, url: shareUrl });
+        } catch {
+          // user cancelled the native share sheet — no error toast needed
+        }
+      } else {
+        await navigator.clipboard?.writeText(shareUrl);
+        onShare?.('Link copied — share it anywhere.');
+      }
+    } finally {
+      setSharing(false);
+    }
+  };
   const videoUrl = item.mediaUrl ? `${MEDIA_BASE}${item.mediaUrl}` : null;
 
   useEffect(() => {
@@ -114,13 +144,9 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
           <MessageCircle size={26} className="text-text-dark" />
           <span className="text-[11px] font-body text-text-dark-muted">{commentCount + (commentBump || 0)}</span>
         </button>
-        <button
-          onClick={async () => {
-            await api.addShare(item._id).catch(() => {});
-            await navigator.clipboard?.writeText(`${window.location.origin}/reels`);
-          }}
-        >
+        <button onClick={handleShareClick} disabled={sharing} className="flex flex-col items-center gap-1">
           <Send size={22} className="text-text-dark" />
+          <span className="text-[11px] font-body text-text-dark-muted">{shareCount}</span>
         </button>
       </div>
     </div>
@@ -133,6 +159,12 @@ export default function ReelsPage() {
   const [loading, setLoading] = useState(true);
   const [commentsOpenFor, setCommentsOpenFor] = useState(null);
   const [commentBumps, setCommentBumps] = useState({});
+  const [toast, setToast] = useState('');
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 1800);
+  };
 
   useEffect(() => {
     api.getComplaints('reel')
@@ -185,6 +217,7 @@ export default function ReelsPage() {
           onToggleLike={handleToggleLike}
           onOpenComments={setCommentsOpenFor}
           commentBump={commentBumps[item._id]}
+          onShare={showToast}
         />
       ))}
 
@@ -199,6 +232,19 @@ export default function ReelsPage() {
           }))
         }
       />
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[80] px-4 py-2.5 rounded-full bg-ink-800 border border-ink-700 text-[13px] font-semibold font-body text-text-dark shadow-lg"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
