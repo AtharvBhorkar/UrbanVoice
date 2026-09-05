@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import {
   MapPin, TrendingUp, Users, CheckCircle2,
@@ -282,6 +282,7 @@ const STORIES = [
 ];
 
 export default function CommunityImpactPage() {
+  const navigate = useNavigate();
   const [selectedWard, setSelectedWard] = useState(null);
   const [selectedStory, setSelectedStory] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
@@ -857,7 +858,7 @@ export default function CommunityImpactPage() {
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-              <button className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0a1628] text-volt font-semibold font-body text-[14px] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 transition-all duration-200">
+              <button onClick={() => navigate('/feed')} className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0a1628] text-volt font-semibold font-body text-[14px] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 transition-all duration-200">
                 Report an issue
                 <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
               </button>

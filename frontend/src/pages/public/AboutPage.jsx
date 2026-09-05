@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Building2, Home as HomeIcon, Sparkles, ShieldCheck,
   Users, Eye, Handshake, ArrowRight, Github, Linkedin, Instagram,
@@ -86,6 +87,7 @@ function getShuffledPalettes(count) {
 }
 
 export default function AboutPage() {
+  const navigate = useNavigate();
   const [approachColors] = useState(() => getShuffledPalettes(3));
   const problemVideoRef = useRef(null);
 
@@ -688,7 +690,7 @@ export default function AboutPage() {
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-              <button className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0a1628] text-volt font-semibold font-body text-[14px] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 transition-all duration-200">
+              <button onClick={() => navigate('/feed')} className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0a1628] text-volt font-semibold font-body text-[14px] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 transition-all duration-200">
                 Report an issue
                 <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
               </button>

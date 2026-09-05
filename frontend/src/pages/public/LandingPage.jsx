@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import hero1 from '../../assets/hero1.mp4';
 import section1 from '../../assets/section1.mp4';
 import card1 from '../../assets/card1.png';
@@ -26,9 +27,9 @@ const stagger = {
     show: { transition: { staggerChildren: 0.1 } },
 };
 
-function Section({ children, className = '' }) {
+function Section({ children, className = '', id }) {
     return (
-        <section className={`px-6 md:px-10 lg:px-16 ${className}`}>
+        <section id={id} className={`px-6 md:px-10 lg:px-16 ${className}`}>
             <div className="max-w-none w-full">{children}</div>
         </section>
     );
@@ -74,6 +75,7 @@ function TypingText({ text, className = '', speed = 60, startDelay = 1000 }) {
 }
 
 export default function LandingPage() {
+    const navigate = useNavigate();
     const problemVideoRef = useRef(null);
 
     const handleVideoHoverStart = () => {
@@ -150,11 +152,11 @@ export default function LandingPage() {
                             <TypingText text="Report issues, track progress, and drive change — government or private, all in one place." speed={55} startDelay={1000} />
                         </motion.p>
                         <motion.div variants={fadeUp} className="flex flex-wrap items-center justify-center gap-4 mt-9">
-                            <button className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-volt text-black font-semibold font-body hover:bg-volt-dim hover:-translate-y-0.5 transition-all duration-200">
+                            <button onClick={() => navigate('/feed')} className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-volt text-black font-semibold font-body hover:bg-volt-dim hover:-translate-y-0.5 transition-all duration-200">
                                 Report an issue
                                 <ArrowRight size={17} className="group-hover:translate-x-0.5 transition-transform" />
                             </button>
-                            <button className="px-6 py-3.5 rounded-full border border-volt/30 text-volt font-medium font-body hover:border-volt transition-colors">
+                            <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="px-6 py-3.5 rounded-full border border-volt/30 text-volt font-medium font-body hover:border-volt transition-colors">
                                 See how it works
                             </button>
                         </motion.div>
@@ -193,7 +195,7 @@ export default function LandingPage() {
                 </motion.div>
             </Section>
 
-            <Section className="py-24 md:py-32 bg-navy">
+            <Section id="how-it-works" className="py-24 md:py-32 bg-navy">
                 <div className="grid md:grid-cols-2 gap-14 md:gap-10 items-center">
                     <motion.div
                         initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.5 }} variants={stagger}
@@ -558,11 +560,11 @@ export default function LandingPage() {
                         </p>
 
                         <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
-                            <button className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0a1628] text-volt font-semibold font-body text-[14px] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 transition-all duration-200">
+                            <button onClick={() => navigate('/login')} className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0a1628] text-volt font-semibold font-body text-[14px] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 transition-all duration-200">
                                 Get started — it's free
                                 <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
                             </button>
-                            <button className="px-5 py-2.5 rounded-full border border-black/20 text-black font-medium font-body text-[14px] hover:border-black/40 hover:bg-black/5 transition-colors">
+                            <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="px-5 py-2.5 rounded-full border border-black/20 text-black font-medium font-body text-[14px] hover:border-black/40 hover:bg-black/5 transition-colors">
                                 See how it works
                             </button>
                         </div>

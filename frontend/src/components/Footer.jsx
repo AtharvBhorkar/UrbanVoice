@@ -5,30 +5,12 @@ import logo from '../assets/logo.png';
 const FOOTER_LINKS = {
   Platform: [
     { label: 'Home', to: '/' },
-    { label: 'Explore', to: '/explore' },
-    { label: 'Map view', to: '/map' },
-    { label: 'Reels', to: '/reels' },
-    { label: 'Leaderboard', to: '/leaderboard' },
-  ],
-  Account: [
-    { label: 'Log in', to: '/login' },
-    { label: 'Sign up', to: '/signup' },
-    { label: 'My complaints', to: '/my-complaints' },
-    { label: 'My badges', to: '/my-badges' },
-    { label: 'Settings', to: '/settings' },
-  ],
-  Community: [
-    { label: 'Community impact', to: '/community-impact' },
-    { label: 'Success stories', to: '/success-stories' },
-    { label: 'Report an issue', to: '/create' },
-    { label: 'Admin login', to: '/admin/login' },
+    { label: 'Explore', to: '/feed' },
   ],
   Company: [
     { label: 'About us', to: '/about' },
     { label: 'Help & FAQ', to: '/help' },
-    { label: 'Contact us', to: '/contact' },
-    { label: 'Privacy policy', to: '/privacy' },
-    { label: 'Terms of service', to: '/terms' },
+    { label: 'Community impact', to: '/community-impact' },
   ],
 };
 
@@ -43,7 +25,7 @@ export default function Footer() {
   return (
     <footer className="bg-navy border-t border-volt/10">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 pt-16 pb-8">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-10 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
           <div className="col-span-2 md:col-span-2 pr-4">
             <Link to="/" className="flex items-center gap-2.5">
               <img src={logo} alt="" className="w-8 h-8 object-contain" />
@@ -97,12 +79,6 @@ export default function Footer() {
             © {new Date().getFullYear()} UrbanVoice. All rights reserved.
           </span>
           <div className="flex items-center gap-6">
-            <Link to="/privacy" className="font-body text-[13px] text-volt/50 hover:text-volt transition-colors">
-              Privacy
-            </Link>
-            <Link to="/terms" className="font-body text-[13px] text-volt/50 hover:text-volt transition-colors">
-              Terms
-            </Link>
             <Link to="/help" className="font-body text-[13px] text-volt/50 hover:text-volt transition-colors">
               Help
             </Link>
