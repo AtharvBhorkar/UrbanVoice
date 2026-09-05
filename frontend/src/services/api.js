@@ -5,8 +5,6 @@ const API_BASE_URL = 'http://localhost:5000/api';
 const api = axios.create({
   baseURL: API_BASE_URL,
 });
-
-// Har request ke saath automatically token attach karega (agar user login hai)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -15,9 +13,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ---------- AUTH ----------
 export const signup = (data) => api.post('/auth/signup', data);
 export const login = (data) => api.post('/auth/login', data);
+export const adminLogin = (data) => api.post('/auth/admin-login', data);
 export const forgotPassword = (data) => api.post('/auth/forgot-password', data);
 export const getMe = () => api.get('/auth/me');
 export const searchUsers = (query) => api.get('/auth/search', { params: { q: query } });
@@ -28,8 +26,12 @@ export const updateProfile = (formData) =>
   api.put('/auth/profile', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+export const changePassword = (data) => api.put('/auth/change-password', data);
+export const toggleBlockUser = (userId) => api.put(`/auth/block/${userId}`);
+export const getBlockedUsers = () => api.get('/auth/blocked');
+export const deleteAccount = () => api.delete('/auth/account');
+export const exportMyData = () => api.get('/auth/export');
 
-// ---------- COMPLAINTS (Posts/Reels) ----------
 export const createComplaint = (formData) =>
   api.post('/complaints', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -42,7 +44,6 @@ export const getComplaintsByUser = (userId, type) =>
 export const toggleLike = (id) => api.put(`/complaints/${id}/like`);
 export const toggleSave = (id) => api.put(`/complaints/${id}/save`);
 
-// ---------- ENGAGEMENT (Comments, Views, Shares, Follow) ----------
 export const addComment = (id, text) => api.post(`/engagement/${id}/comment`, { text });
 export const getComments = (id) => api.get(`/engagement/${id}/comments`);
 export const addView = (id) => api.post(`/engagement/${id}/view`);
@@ -51,18 +52,23 @@ export const toggleFollow = (userId) => api.put(`/engagement/follow/${userId}`);
 export const getNotifications = () => api.get('/engagement/notifications');
 export const markNotificationsRead = () => api.put('/engagement/notifications/read');
 
-// ---------- LEADERBOARD ----------
 export const getLeaderboard = () => api.get('/leaderboard');
 export const getTop5 = () => api.get('/leaderboard/top5');
 
-// ---------- ADMIN ----------
 export const getAllComplaintsAdmin = (params) => api.get('/admin/complaints', { params });
-export const updateComplaintStatus = (id, status) =>
-  api.put(`/admin/complaints/${id}/status`, { status });
+export const updateComplaintStatus = (id, payload) =>
+  api.put(`/admin/complaints/${id}/status`, payload);
 export const getAllUsersAdmin = () => api.get('/admin/users');
+export const updateUserAdmin = (id, payload) => api.put(`/admin/users/${id}`, payload);
 export const getAnalytics = () => api.get('/admin/analytics');
 
-// ---------- MESSAGES ----------
+export const getCategories = () => api.get('/categories');
+export const createCategoryAdmin = (data) => api.post('/categories', data);
+export const updateCategoryAdmin = (id, data) => api.put(`/categories/${id}`, data);
+export const deleteCategoryAdmin = (id) => api.delete(`/categories/${id}`);
+export const exportComplaintsCSV = (params) =>
+  api.get('/admin/export', { params, responseType: 'blob' });
+
 export const getConversations = () => api.get('/messages');
 export const getConversation = (userId) => api.get(`/messages/${userId}`);
 export const sendMessage = (userId, text) => api.post(`/messages/${userId}`, { text });

@@ -218,8 +218,12 @@ function ListRow({ item, index }) {
       </span>
 
       <div className={`rounded-full bg-gradient-to-tr ${item.ring} p-[1.5px] shrink-0`}>
-        <div className="w-9 h-9 rounded-full bg-ink-800 flex items-center justify-center">
-          <span className="text-[10px] font-semibold text-text-dark font-body">{item.avatar}</span>
+        <div className="w-9 h-9 rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+          {item.avatarUrl ? (
+            <img src={item.avatarUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-[10px] font-semibold text-text-dark font-body">{item.avatar}</span>
+          )}
         </div>
       </div>
 
@@ -265,7 +269,7 @@ export default function LeaderboardPage() {
           ring: RINGS[i % RINGS.length],
           location: u.location || '',
           category: '',
-          caption: `${u.fullName || u.username} has earned ${fmt(u.score)} points from ${fmt(u.totalLikes)} likes, ${fmt(u.totalComments)} comments and ${fmt(u.totalShares)} shares.`,
+          caption: `${u.fullName || u.username} has earned ${fmt(u.score)} points from ${fmt(u.totalLikes)} backs, ${fmt(u.totalComments)} citizen notes and ${fmt(u.totalShares)} voice-spreads.`,
           likes: u.totalLikes,
           comments: u.totalComments,
           shares: u.totalShares,
@@ -292,7 +296,7 @@ export default function LeaderboardPage() {
   const visibleList = useMemo(() => ranked.slice(0, tabsWithCounts[activeTab].count), [activeTab, ranked]);
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 px-8 py-8">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 px-8 py-8">
       <div className="max-w-[900px] mx-auto">
 
         <div className="flex items-start justify-between mb-1">
@@ -309,10 +313,9 @@ export default function LeaderboardPage() {
           </button>
         </div>
         <p className="text-[13.5px] font-body text-text-dark-muted mb-8">
-          Ranked by likes, comments, shares, followers and views combined.
+          Ranked by backs, citizen notes, voice-spreads, followers and reach combined.
         </p>
 
-        {/* ===== Royal Top 5 ===== */}
         <div className="-mx-40">
           <div className="flex items-end justify-center gap-8 overflow-x-auto pt-6 pb-4 mb-6 px-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {podiumOrder.map((item) => (
@@ -326,7 +329,6 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        {/* ===== Selected card detail panel ===== */}
         <AnimatePresence mode="wait">
           {selectedCard && (
             <motion.div
@@ -341,8 +343,12 @@ export default function LeaderboardPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className={`rounded-full bg-gradient-to-tr ${selectedCard.ring} p-[2px] w-14 h-14 shrink-0`}>
-                      <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-                        <span className="text-[13px] font-semibold text-text-dark font-body">{selectedCard.avatar}</span>
+                      <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+                        {selectedCard.avatarUrl ? (
+                          <img src={selectedCard.avatarUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-[13px] font-semibold text-text-dark font-body">{selectedCard.avatar}</span>
+                        )}
                       </div>
                     </div>
                     <div>
@@ -386,10 +392,10 @@ export default function LeaderboardPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mt-5">
                   {[
-                    { label: 'Likes', value: selectedCard.likes, icon: Heart },
+                    { label: 'Backed', value: selectedCard.likes, icon: Heart },
                     { label: 'Comments', value: selectedCard.comments, icon: MessageCircle },
                     { label: 'Shares', value: selectedCard.shares, icon: Share2 },
-                    { label: 'Followers', value: selectedCard.followers, icon: Users },
+                    { label: 'Subscribers', value: selectedCard.followers, icon: Users },
                     { label: 'Views', value: selectedCard.views, icon: Eye },
                     { label: 'Points', value: selectedCard.score, icon: TrendingUp, highlight: true },
                   ].map((stat) => (
@@ -423,8 +429,6 @@ export default function LeaderboardPage() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* ===== Tabs ===== */}
         <div className="flex items-center gap-2 mb-4">
           {tabsWithCounts.map((tab, i) => (
             <button
@@ -441,7 +445,6 @@ export default function LeaderboardPage() {
           ))}
         </div>
 
-        {/* ===== Ranked list ===== */}
         <div className="rounded-2xl border border-ink-800 bg-ink-900 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
@@ -466,7 +469,6 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      {/* ===== Rules modal ===== */}
       <AnimatePresence>
         {rulesOpen && (
           <motion.div
@@ -503,7 +505,7 @@ export default function LeaderboardPage() {
                   { icon: Share2, label: 'Shares', weight: '×3', points: '3 pts', note: 'sabse zyada weight' },
                   { icon: MessageCircle, label: 'Comments', weight: '×2', points: '2 pts', note: 'high engagement signal' },
                   { icon: Heart, label: 'Likes', weight: '×1', points: '1 pt', note: 'base weight' },
-                  { icon: Users, label: 'Followers', weight: '×0.4', points: '0.4 pt', note: 'reach ka indicator' },
+                  { icon: Users, label: 'Subscribers', weight: '×0.4', points: '0.4 pt', note: 'reach ka indicator' },
                   { icon: Eye, label: 'Views', weight: '×0.05', points: '0.05 pt', note: 'high volume, low weight' },
                 ].map((r) => (
                   <div key={r.label} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-ink-950/60 border border-ink-800">

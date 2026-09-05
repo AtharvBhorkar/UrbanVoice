@@ -36,8 +36,16 @@ export default function CreateReelPage() {
   const [duration, setDuration] = useState(0);
   const [trimStart, setTrimStart] = useState(0);
   const [trimEnd, setTrimEnd] = useState(0);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('Other');
   const inputRef = useRef(null);
   const videoRef = useRef(null);
+
+  useEffect(() => {
+    api.getCategories()
+      .then((res) => setCategories(res.data))
+      .catch(() => {});
+  }, []);
 
   const handleFiles = (files) => {
     if (files && files[0]) {
@@ -77,7 +85,7 @@ export default function CreateReelPage() {
       const formData = new FormData();
       formData.append('type', 'reel');
       formData.append('caption', caption);
-      formData.append('category', 'Other');
+      formData.append('category', selectedCategory);
       formData.append('location', selectedLocation || '');
       formData.append('media', file);
 
@@ -110,7 +118,7 @@ export default function CreateReelPage() {
   };
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 flex items-center justify-center px-6 py-10">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 flex items-center justify-center px-6 py-10">
       <div className={`w-full rounded-2xl bg-ink-900 border border-ink-700 overflow-hidden shadow-2xl transition-all duration-200 ${step === 'details' ? 'max-w-[1000px]' : 'max-w-[420px]'}`}>
 
         {step === 'trim' && file && previewUrl ? (
@@ -278,6 +286,23 @@ export default function CreateReelPage() {
                       <MapPin size={16} className="text-text-dark-muted" />
                     </button>
                   )}
+
+                  <div className="px-4 py-3.5 border-t border-ink-800">
+                    <label className="text-[12px] font-body text-text-dark-muted block mb-1.5">Category</label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full bg-ink-800 border border-ink-700 rounded-lg px-3 py-2 text-[13.5px] font-body text-text-dark focus:outline-none focus:border-signal"
+                    >
+                      {categories.length === 0 ? (
+                        <option value="Other">Other</option>
+                      ) : (
+                        categories.map((c) => (
+                          <option key={c._id} value={c.name}>{c.name}</option>
+                        ))
+                      )}
+                    </select>
+                  </div>
 
                   <div className="flex items-center justify-between px-4 py-3.5 border-t border-ink-800">
                     <span className="text-[14px] font-semibold font-body text-text-dark">Share to Feed</span>

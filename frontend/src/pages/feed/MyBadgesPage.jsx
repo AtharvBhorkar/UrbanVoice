@@ -97,7 +97,7 @@ export default function MyBadgesPage() {
   })).filter((g) => g.items.length > 0);
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 px-8 py-8">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 px-8 py-8">
       <div className="max-w-[1000px] mx-auto">
 
         <div className="flex items-center justify-between mb-1">
@@ -114,7 +114,6 @@ export default function MyBadgesPage() {
           {unlockedCount} / 57 badges unlocked · Complete each challenge to unlock the next badge.
         </p>
 
-        {/* ===== Supreme Leader — unique hero badge ===== */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -182,7 +181,6 @@ export default function MyBadgesPage() {
           </div>
         </motion.div>
 
-        {/* ===== Tiered badge grid ===== */}
         {grouped.map((group) => (
           <div key={group.tierName} className="mb-9">
             <p className="text-[12.5px] font-semibold font-body text-text-dark-muted uppercase tracking-wide mb-3 px-1">

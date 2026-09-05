@@ -120,8 +120,7 @@ export default function AboutPage() {
         }
       `}</style>
 
-      <section className="relative pt-32 md:pt-40 pb-40 md:pb-56 bg-navy min-h-[110vh] overflow-hidden">
-        <video
+      <section className="relative pt-28 md:pt-40 pb-32 md:pb-56 bg-navy min-h-screen md:min-h-[110vh] overflow-hidden">        <video
           autoPlay
           loop
           muted
@@ -143,8 +142,8 @@ export default function AboutPage() {
               variants={fadeUp}
               className="font-display font-bold text-[36px] leading-[1.1] sm:text-[42px] md:text-[64px] mt-6 tracking-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]"
             >
-              <span className="block whitespace-nowrap gradient-text">Every complaint deserves</span>
-              <span className="block whitespace-nowrap gradient-text">somewhere to go.</span>
+              <span className="block gradient-text">Every complaint deserves</span>
+              <span className="block gradient-text">somewhere to go.</span>
             </motion.h1>
             <motion.p
               variants={fadeUp}
@@ -165,9 +164,9 @@ export default function AboutPage() {
       <Section className="py-24 md:py-32 bg-[#f5f3cd]">
         <motion.div
           initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
-          className="grid md:grid-cols-2 gap-14 items-center"
+          className="grid xl:grid-cols-2 gap-14 items-center"
         >
-          <motion.div variants={fadeUp}>
+          <motion.div variants={fadeUp} className="text-center xl:text-left flex flex-col items-center xl:items-start">
             <span className="inline-flex items-center gap-2 text-[13px] font-semibold tracking-wide uppercase font-body text-signal">
               <AlertCircle size={16} className="text-signal" />
               The problem
@@ -198,7 +197,7 @@ export default function AboutPage() {
                 </svg>
               </span>
             </h2>
-            <ul className="mt-8 space-y-4 max-w-md">
+            <ul className="mt-8 space-y-4 max-w-md mx-auto xl:mx-0 text-left">
               <li className="flex items-start gap-3">
                 <span className="mt-2 w-1.5 h-1.5 rounded-full bg-signal shrink-0" />
                 <p className="font-body text-[16px] text-[#0a1628]/65 leading-relaxed">
@@ -544,8 +543,7 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-[1.1fr_0.9fr] gap-16 md:gap-12 items-center relative z-10">
           <motion.div
             initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
-            className="relative max-w-[340px] md:max-w-[400px] mx-auto md:order-1 order-2"
-          >
+            className="relative max-w-[280px] sm:max-w-[340px] md:max-w-[400px] mx-auto mt-6 sm:mt-0 md:order-1 order-2"          >
             <motion.div
               whileHover={{ rotateY: 6, rotateX: -4, scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
@@ -576,20 +574,17 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.5, type: 'spring' }}
-              className="absolute -top-5 -right-5 bg-[#0a1628] text-volt px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2"
-            >
+              className="absolute -top-4 -right-2 sm:-top-5 sm:-right-5 bg-[#0a1628] text-volt px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-xl flex items-center gap-2"            >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-body text-[12px] font-semibold whitespace-nowrap">Frontend Developer</span>
-            </motion.div>
+              <span className="font-body text-[10px] sm:text-[12px] font-semibold whitespace-nowrap">Frontend Developer</span>            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 10, scale: 0.8 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.65, type: 'spring' }}
-              className="absolute -bottom-5 -left-5 bg-white px-4 py-2.5 rounded-2xl shadow-xl border border-[#0a1628]/10"
-            >
-              <span className="font-body text-[12px] font-semibold text-[#0a1628] whitespace-nowrap">
+              className="absolute -bottom-4 -left-2 sm:-bottom-5 sm:-left-5 bg-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-xl border border-[#0a1628]/10"            >
+              <span className="font-body text-[10px] sm:text-[12px] font-semibold text-[#0a1628] whitespace-nowrap">
                 mr.ATHARV
               </span>
             </motion.div>
@@ -599,7 +594,7 @@ export default function AboutPage() {
 
           <motion.div
             initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.4 }} variants={stagger}
-            className="md:order-2 order-1"
+            className="md:order-2 order-1 text-center md:text-left flex flex-col items-center md:items-start"
           >
             <motion.div variants={fadeUp} className="text-signal/30 font-display font-bold text-[64px] leading-none -mb-4">
               "
@@ -612,7 +607,7 @@ export default function AboutPage() {
               Atharv Bhorkar
             </motion.h3>
 
-            <motion.div variants={fadeUp} className="flex items-center gap-2 mt-2">
+            <motion.div variants={fadeUp} className="flex items-center justify-center md:justify-start gap-2 mt-2">
               <span className="w-1.5 h-1.5 rounded-full bg-signal" />
               <p className="font-body text-[14px] text-[#0a1628]/60 font-medium">
                 Frontend Developer · Builder of UrbanVoice
@@ -630,7 +625,7 @@ export default function AboutPage() {
               complaint a place to go and a way to be seen.
             </motion.p>
 
-            <motion.div variants={fadeUp} className="flex items-center gap-3 mt-8">
+            <motion.div variants={fadeUp} className="flex items-center justify-center md:justify-start gap-3 mt-8">
               <a
                 href="https://github.com/AtharvBhorkar"
                 target="_blank"
@@ -654,7 +649,7 @@ export default function AboutPage() {
               >
                 <Instagram size={18} className="group-hover:scale-110 transition-transform" />
               </a>
-              <div className="flex-1 h-[1px] bg-[#0a1628]/10 ml-2" />
+              <div className="hidden md:block flex-1 h-[1px] bg-[#0a1628]/10 ml-2" />
             </motion.div>
           </motion.div>
         </div>
@@ -683,7 +678,7 @@ export default function AboutPage() {
               Join the movement
             </span>
 
-            <h2 className="font-display font-bold text-[22px] md:text-[36px] leading-tight text-black mt-3 max-w-none whitespace-nowrap">
+           <h2 className="font-display font-bold text-[19px] sm:text-[24px] md:text-[36px] leading-tight text-black mt-3 max-w-lg">
               Got something to report? Let your voice be heard.
             </h2>
 

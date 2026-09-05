@@ -89,18 +89,15 @@ export default function NotificationsPage() {
     }
   };
 
-  // No per-notification read endpoint on the backend yet, so opening one just
-  // reflects it as read locally for now (mark-all handles the persisted state).
   const markRead = (id) => setItems((prev) => prev.map((n) => (n._id === id ? { ...n, isRead: true } : n)));
 
-  // "New" = last 24h, "Earlier" = older — since backend doesn't group these itself
   const isRecent = (dateStr) => Date.now() - new Date(dateStr).getTime() < 24 * 60 * 60 * 1000;
   const newItems = items.filter((n) => isRecent(n.createdAt));
   const earlierItems = items.filter((n) => !isRecent(n.createdAt));
   const unreadCount = items.filter((n) => !n.isRead).length;
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 px-8 py-8">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 px-8 py-8">
       <div className="max-w-[640px] mx-auto">
 
         <div className="flex items-center justify-between mb-6">

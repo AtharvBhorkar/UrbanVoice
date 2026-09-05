@@ -14,8 +14,6 @@ import FollowListModal from '../../components/FollowListModal';
 
 const MEDIA_BASE = 'http://localhost:5000';
 
-// USER is now built dynamically from the logged-in account inside the component (see below)
-
 const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say', 'Custom'];
 
 const STORAGE_KEY = 'urbanvoice_profile_data';
@@ -34,8 +32,8 @@ const HIGHLIGHTS = [
 ];
 
 const TABS = [
-  { id: 'reels', icon: Clapperboard, label: 'Reels' },
-  { id: 'posts', icon: Grid3x3, label: 'Posts' }
+  { id: 'reels', icon: Clapperboard, label: 'Voice Reels' },
+  { id: 'posts', icon: Grid3x3, label: 'Voice Posts' }
 ];
 
 const POSTS = [
@@ -120,6 +118,12 @@ export default function ProfilePage() {
     api.getComplaintsByUser(user._id, 'reel').then((res) => setReels(res.data)).catch(() => {});
   }, [user?._id]);
 
+  useEffect(() => {
+    if (user?.avatar) {
+      setProfileImage(`${MEDIA_BASE}${user.avatar}`);
+    }
+  }, [user?.avatar]);
+
   const [reelComments, setReelComments] = useState([]);
   const [reelCommentDraft, setReelCommentDraft] = useState('');
 
@@ -129,6 +133,43 @@ export default function ProfilePage() {
       .then((res) => setReelComments(res.data))
       .catch(() => setReelComments([]));
   }, [openReelIndex, reels]);
+
+  const [postComments, setPostComments] = useState([]);
+
+  useEffect(() => {
+    if (openPostIndex === null || !posts[openPostIndex]) return;
+    api.getComments(posts[openPostIndex]._id)
+      .then((res) => setPostComments(res.data))
+      .catch(() => setPostComments([]));
+  }, [openPostIndex, posts]);
+
+  const handlePostLikeToggle = async () => {
+    const post = posts[openPostIndex];
+    if (!post) return;
+    try {
+      await api.toggleLike(post._id);
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p._id !== post._id) return p;
+          const already = p.likes.includes(user._id);
+          return { ...p, likes: already ? p.likes.filter((id) => id !== user._id) : [...p.likes, user._id] };
+        })
+      );
+    } catch (err) {
+      console.error('Like failed', err);
+    }
+  };
+
+  const handlePostSaveToggle = async () => {
+    const post = posts[openPostIndex];
+    if (!post) return;
+    try {
+      await api.toggleSave(post._id);
+      await refreshUser();
+    } catch (err) {
+      console.error('Save failed', err);
+    }
+  };
 
   const handleReelLikeToggle = async () => {
     const reel = reels[openReelIndex];
@@ -179,6 +220,7 @@ export default function ProfilePage() {
   const [commentDraft, setCommentDraft] = useState('');
   const commentInputRef = useRef(null);
   const postCommentInputRef = useRef(null);
+  const reelCommentInputRef = useRef(null);
 
   const handlePostComment = () => {
     const text = commentDraft.trim();
@@ -193,17 +235,17 @@ export default function ProfilePage() {
     setCommentDraft('');
   };
 
-  const handlePostCommentSubmit = () => {
+  const handlePostCommentSubmit = async () => {
     const text = postCommentDraft.trim();
-    if (!text) return;
-    setPosts((prev) =>
-      prev.map((p, i) =>
-        i === openPostIndex
-          ? { ...p, commentsList: [...(p.commentsList || []), { user: USER.username, text }] }
-          : p
-      )
-    );
-    setPostCommentDraft('');
+    const post = posts[openPostIndex];
+    if (!text || !post) return;
+    try {
+      const res = await api.addComment(post._id, text);
+      setPostComments((prev) => [...prev, res.data]);
+      setPostCommentDraft('');
+    } catch (err) {
+      console.error('Comment failed', err);
+    }
   };
 
   const showToast = (msg) => {
@@ -215,19 +257,23 @@ export default function ProfilePage() {
     imageInputRef.current?.click();
   };
 
-  const handleImageFileChange = (e) => {
+  const handleImageFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       showToast('Please select an image file.');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setProfileImage(reader.result);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const res = await api.updateProfile(formData);
+      await refreshUser();
+      setProfileImage(`${MEDIA_BASE}${res.data.avatar}`);
       showToast('Profile photo updated.');
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      showToast('Could not update profile photo.');
+    }
     e.target.value = '';
   };
 
@@ -363,14 +409,11 @@ export default function ProfilePage() {
         })
       );
     } catch {
-      // storage might be full or unavailable — ignore
     }
   }, [profileImage, profileBio, profileGender, profileWebsite, profileWebsiteLabel, posts, reels]);
 
   const realBadgeCount = user?.badges?.length || 0;
   const earnedBadges = useMemo(() => {
-    // Show as many "unlocked-style" badge tiles as the user has actually earned on the backend,
-    // using the existing local badge visuals in order.
     const allTiers = [...BADGES].reverse();
     const unlocked = allTiers.slice(0, realBadgeCount);
     if (realBadgeCount >= BADGES.length + 1 && isUnlocked(SUPREME)) unlocked.unshift(SUPREME);
@@ -380,7 +423,7 @@ export default function ProfilePage() {
   const visibleBadges = earnedBadges.slice(0, 5);
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 px-8 py-10">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 px-4 sm:px-8 py-6 sm:py-10">
       <input
         ref={imageInputRef}
         type="file"
@@ -389,10 +432,10 @@ export default function ProfilePage() {
         className="hidden"
       />
       <div className="max-w-[900px] mx-auto">
-        <div className="flex items-start gap-10 mb-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-10 mb-8 text-center sm:text-left">
           <button
             onClick={() => profileImage && setAvatarViewOpen(true)}
-            className={`w-[150px] h-[150px] rounded-full bg-gradient-to-tr from-signal to-volt p-[3px] shrink-0 ${profileImage ? 'cursor-pointer' : 'cursor-default'}`}
+            className={`w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] rounded-full bg-gradient-to-tr from-signal to-volt p-[3px] shrink-0 ${profileImage ? 'cursor-pointer' : 'cursor-default'}`}
           >
             <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
               {profileImage ? (
@@ -403,8 +446,8 @@ export default function ProfilePage() {
             </div>
           </button>
 
-          <div className="flex-1 min-w-0 pt-2">
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <div className="flex-1 min-w-0 pt-2 w-full flex flex-col items-center sm:items-start">
+            <div className="flex items-center justify-center sm:justify-start gap-2 mb-4 flex-wrap">
               <h1 className="text-[22px] font-body font-normal text-text-dark">{USER.username}</h1>
               <motion.div
                 initial={{ opacity: 0, scale: 0.7 }}
@@ -429,19 +472,19 @@ export default function ProfilePage() {
               </motion.div>
             </div>
 
-            <div className="flex items-center gap-8 mb-4">
+            <div className="flex items-center justify-center sm:justify-start gap-6 sm:gap-8 mb-4">
               <span className="text-[14px] font-body text-text-dark">
                 <strong className="font-semibold">{posts.length + reels.length}</strong> posts
               </span>
               <button onClick={() => setFollowModal('followers')} className="text-[14px] font-body text-text-dark hover:underline">
-                <strong className="font-semibold">{USER.followers}</strong> followers
+                <strong className="font-semibold">{USER.followers}</strong> Subscribers
               </button>
               <button onClick={() => setFollowModal('following')} className="text-[14px] font-body text-text-dark hover:underline">
-                <strong className="font-semibold">{USER.following}</strong> following
+                <strong className="font-semibold">{USER.following}</strong> Subscriptions
               </button>
             </div>
 
-                        <div className="text-[14px] font-body leading-relaxed mb-5 max-w-[420px]">
+                        <div className="text-[14px] font-body leading-relaxed mb-5 max-w-[420px] mx-auto sm:mx-0">
               <p className="text-text-dark-muted text-[13px]">{USER.role}</p>
               <p className="font-semibold text-text-dark mt-0.5">{USER.fullName}</p>
               <p className="text-text-dark-muted mt-1.5">{profileBio}</p>
@@ -461,7 +504,7 @@ export default function ProfilePage() {
 </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-center sm:justify-start gap-2.5 w-full">
               <button
                 onClick={handleOpenEditProfile}
                 className="px-6 py-1.5 rounded-lg bg-ink-800 hover:bg-ink-700 text-[13.5px] font-semibold font-body text-text-dark transition-colors"
@@ -481,7 +524,7 @@ export default function ProfilePage() {
             <p className="text-[13px] font-body text-text-dark-muted px-1">No badges earned yet.</p>
           ) : (
             <div className="relative">
-              <div className="flex items-start gap-5">
+              <div className="flex items-start gap-5 justify-center sm:justify-start flex-wrap">
                 {visibleBadges.map((badge, index) => {
                   const Icon = badge.icon;
                   return (
@@ -530,7 +573,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className="flex items-center justify-center gap-16 border-t border-ink-800 mb-1">
+        <div className="flex items-center justify-center gap-8 sm:gap-16 border-t border-ink-800 mb-1">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -588,12 +631,11 @@ export default function ProfilePage() {
               >
                 {r.mediaUrl && (
                   <video
-                    src={`${MEDIA_BASE}${r.mediaUrl}`}
+                    src={`${MEDIA_BASE}${r.mediaUrl}#t=0.1`}
                     muted
-                    loop
                     playsInline
-                    autoPlay
-                    className="absolute inset-0 w-full h-full object-cover"
+                    preload="metadata"
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
                   />
                 )}
                 <Clapperboard size={14} className="absolute top-2 left-2 text-text-dark/80 z-10" />
@@ -767,7 +809,10 @@ export default function ProfilePage() {
                       <button onClick={handleReelLikeToggle} aria-label="Like">
                         <Heart size={22} className={reels[openReelIndex].likes?.includes(user._id) ? 'text-signal fill-signal' : 'text-text-dark'} />
                       </button>
-                      <button aria-label="Comment">
+                      <button
+                        aria-label="Comment"
+                        onClick={() => reelCommentInputRef.current?.focus({ preventScroll: false })}
+                      >
                         <MessageCircle size={22} className="text-text-dark" />
                       </button>
                       <button aria-label="Share" onClick={handleShareReel}>
@@ -778,17 +823,18 @@ export default function ProfilePage() {
 
                   <div className="px-4 pt-2.5">
                     <p className="text-[13px] font-semibold font-body text-text-dark">
-                      {reels[openReelIndex].likes?.length || 0} likes
+                      {reels[openReelIndex].likes?.length || 0} Backed
                     </p>
                     <p className="text-[11px] font-body text-text-dark-muted mt-0.5">{timeAgo(reels[openReelIndex].createdAt)}</p>
                   </div>
 
                   <div className="flex items-center gap-3 px-4 py-3 mt-1">
                     <input
+                      ref={reelCommentInputRef}
                       value={reelCommentDraft}
                       onChange={(e) => setReelCommentDraft(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleReelCommentSend(); }}
-                      placeholder="Add a comment..."
+                      placeholder="Add a Citizen Note..."
                       className="flex-1 bg-transparent text-[13px] font-body text-text-dark placeholder:text-text-dark-muted focus:outline-none"
                     />
                     <button
@@ -850,8 +896,16 @@ export default function ProfilePage() {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-[980px] h-[85vh] max-h-[720px] rounded-2xl border border-ink-800 bg-ink-900 overflow-hidden flex"
             >
-              <div className={`relative w-[55%] shrink-0 bg-gradient-to-br ${posts[openPostIndex].tone} flex items-center justify-center`}>
-                <Grid3x3 size={48} strokeWidth={1.2} className="text-text-dark/50" />
+              <div className="relative w-[55%] shrink-0 bg-black flex items-center justify-center overflow-hidden">
+                {posts[openPostIndex].mediaUrl ? (
+                  <img
+                    src={`${MEDIA_BASE}${posts[openPostIndex].mediaUrl}`}
+                    alt=""
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Grid3x3 size={48} strokeWidth={1.2} className="text-text-dark/50" />
+                )}
               </div>
 
               <div className="flex-1 flex flex-col min-w-0">
@@ -914,11 +968,11 @@ export default function ProfilePage() {
                     </p>
                   )}
 
-                  {posts[openPostIndex].commentsList?.length > 0 && (
+                  {postComments.length > 0 && (
                     <div className="flex flex-col gap-3 mt-5">
-                      {posts[openPostIndex].commentsList.map((c, i) => (
-                        <p key={i} className="text-[13.5px] font-body text-text-dark leading-relaxed">
-                          <span className="font-semibold">{c.user}</span>{' '}
+                      {postComments.map((c) => (
+                        <p key={c._id} className="text-[13.5px] font-body text-text-dark leading-relaxed">
+                          <span className="font-semibold">{c.user?.username}</span>{' '}
                           <span className="text-text-dark-muted">{c.text}</span>
                         </p>
                       ))}
@@ -929,8 +983,8 @@ export default function ProfilePage() {
                 <div className="shrink-0 border-t border-ink-800">
                   <div className="flex items-center justify-between px-4 pt-3">
                     <div className="flex items-center gap-4">
-                      <button onClick={() => setPostLiked((v) => !v)} aria-label="Like">
-                        <Heart size={22} className={postLiked ? 'text-signal fill-signal' : 'text-text-dark'} />
+                      <button onClick={handlePostLikeToggle} aria-label="Like">
+                        <Heart size={22} className={posts[openPostIndex].likes?.includes(user._id) ? 'text-signal fill-signal' : 'text-text-dark'} />
                       </button>
                       <button
                         aria-label="Comment"
@@ -942,16 +996,16 @@ export default function ProfilePage() {
                         <Send size={20} className="text-text-dark" />
                       </button>
                     </div>
-                    <button onClick={() => setPostSaved((v) => !v)} aria-label="Save">
-                      <Bookmark size={20} className={postSaved ? 'text-text-dark fill-text-dark' : 'text-text-dark'} />
+                    <button onClick={handlePostSaveToggle} aria-label="Save">
+                      <Bookmark size={20} className={user?.savedIssues?.some((id) => (id?._id || id) === posts[openPostIndex]._id) ? 'text-text-dark fill-text-dark' : 'text-text-dark'} />
                     </button>
                   </div>
 
                   <div className="px-4 pt-2.5">
                     <p className="text-[13px] font-semibold font-body text-text-dark">
-                      {postLiked ? posts[openPostIndex].likes + 1 : posts[openPostIndex].likes} likes
+                      {posts[openPostIndex].likes?.length || 0} Backed
                     </p>
-                    <p className="text-[11px] font-body text-text-dark-muted mt-0.5">{posts[openPostIndex].time}</p>
+                    <p className="text-[11px] font-body text-text-dark-muted mt-0.5">{timeAgo(posts[openPostIndex].createdAt)}</p>
                   </div>
 
                   <div className="flex items-center gap-3 px-4 py-3 mt-1">
@@ -960,7 +1014,7 @@ export default function ProfilePage() {
                       value={postCommentDraft}
                       onChange={(e) => setPostCommentDraft(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handlePostCommentSubmit(); }}
-                      placeholder="Add a comment..."
+                      placeholder="Add a Citizen Note..."
                       className="flex-1 bg-transparent text-[13px] font-body text-text-dark placeholder:text-text-dark-muted focus:outline-none"
                     />
                     <button

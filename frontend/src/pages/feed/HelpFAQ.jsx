@@ -12,7 +12,7 @@ export default function HelpFAQ() {
   const [openIndex, setOpenIndex] = useState(null);
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 px-8 py-10">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 px-8 py-10">
       <div className="max-w-[720px] mx-auto">
         <div className="flex items-center gap-2.5 mb-8">
           <HelpCircle size={22} className="text-volt" />

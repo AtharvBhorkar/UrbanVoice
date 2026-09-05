@@ -59,7 +59,6 @@ export default function MessagesPage() {
     loadConversations();
   }, []);
 
-  // Support opening a chat directly via /messages?with=someUserId (used by the Profile page)
   useEffect(() => {
     const withId = searchParams.get('with');
     const withUsername = searchParams.get('username');
@@ -99,8 +98,7 @@ export default function MessagesPage() {
   );
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 flex">
-      {/* ===== LEFT: conversation list ===== */}
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 flex">
       <div className="w-[320px] shrink-0 border-r border-ink-800 flex flex-col h-screen">
         <div className="px-5 pt-6 pb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -163,7 +161,6 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {/* ===== RIGHT: chat thread ===== */}
       <div className="flex-1 flex flex-col h-screen">
         {!activeUser ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3">

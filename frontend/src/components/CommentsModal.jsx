@@ -67,7 +67,7 @@ export default function CommentsModal({ complaintId, open, onClose, onCommentAdd
             className="w-full max-w-[420px] max-h-[70vh] rounded-2xl border border-ink-700 bg-ink-900 overflow-hidden flex flex-col"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-ink-800 shrink-0">
-              <h2 className="text-[15px] font-display font-bold text-text-dark">Comments</h2>
+              <h2 className="text-[15px] font-display font-bold text-text-dark">Citizen Notes</h2>
               <button onClick={onClose} aria-label="Close">
                 <X size={18} className="text-text-dark-muted hover:text-text-dark transition-colors" />
               </button>

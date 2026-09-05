@@ -1,10 +1,9 @@
 const Complaint = require('../models/Complaint');
+const Category = require('../models/Category');
 const Notification = require('../models/Notification');
 const calculatePriorityScore = require('../utils/priorityScore');
 const checkAndUnlockBadges = require('../utils/checkBadges');
 
-// @desc    Create a new post or reel
-// @route   POST /api/complaints
 const createComplaint = async (req, res) => {
   try {
     const { type, caption, category, location, lat, lng, isAnonymous } = req.body;
@@ -16,18 +15,9 @@ const createComplaint = async (req, res) => {
     const mediaType = req.file.mimetype.startsWith('video') ? 'video' : 'image';
     const mediaUrl = `/uploads/${req.file.filename}`;
 
-    // department category se derive hota hai (General fallback)
-    const departmentMap = {
-      Water: 'Water',
-      Electricity: 'Electricity',
-      Sanitation: 'Sanitation',
-      Roads: 'Roads',
-      Civic: 'Civic',
-      Society: 'Society',
-    };
-    const department = departmentMap[category] || 'General';
+    const categoryDoc = await Category.findOne({ name: category });
+    const department = categoryDoc?.department || 'General';
 
-    // SLA: default 7 din ka expected resolution window
     const expectedResolutionDate = new Date();
     expectedResolutionDate.setDate(expectedResolutionDate.getDate() + 7);
 
@@ -45,8 +35,6 @@ const createComplaint = async (req, res) => {
       expectedResolutionDate,
       statusHistory: [{ status: 'Pending', changedBy: req.user._id, note: 'Complaint filed' }],
     });
-
-    // isi area/category mein pehle se kitni complaints hain (repeat-issue bonus ke liye)
     const repeatCountInArea = location
       ? await Complaint.countDocuments({
           _id: { $ne: complaint._id },
@@ -55,7 +43,11 @@ const createComplaint = async (req, res) => {
         })
       : 0;
 
-    complaint.priorityScore = calculatePriorityScore(complaint, repeatCountInArea);
+    complaint.priorityScore = calculatePriorityScore(
+      complaint,
+      repeatCountInArea,
+      categoryDoc?.priorityWeight
+    );
     await complaint.save();
 
     await checkAndUnlockBadges(req.user);
@@ -68,8 +60,6 @@ const createComplaint = async (req, res) => {
   }
 };
 
-// @desc    Get all public posts/reels (feed) - newest first
-// @route   GET /api/complaints?type=reel|post
 const getComplaints = async (req, res) => {
   try {
     const filter = { isPublic: true };
@@ -86,8 +76,6 @@ const getComplaints = async (req, res) => {
   }
 };
 
-// @desc    Get single complaint by id + increment view
-// @route   GET /api/complaints/:id
 const getComplaintById = async (req, res) => {
   try {
     const complaint = await Complaint.findById(req.params.id).populate(
@@ -105,8 +93,6 @@ const getComplaintById = async (req, res) => {
   }
 };
 
-// @desc    Get complaints of a specific user (for their profile)
-// @route   GET /api/complaints/user/:userId
 const getComplaintsByUser = async (req, res) => {
   try {
     const filter = { user: req.params.userId };
@@ -122,8 +108,6 @@ const getComplaintsByUser = async (req, res) => {
   }
 };
 
-// @desc    Like / Unlike a complaint (toggle)
-// @route   PUT /api/complaints/:id/like
 const toggleLike = async (req, res) => {
   try {
     const complaint = await Complaint.findById(req.params.id);
@@ -140,13 +124,17 @@ const toggleLike = async (req, res) => {
       complaint.likes.push(req.user._id);
 
       if (complaint.user.toString() !== userId) {
-        await Notification.create({
-          recipient: complaint.user,
-          sender: req.user._id,
-          type: 'like',
-          complaint: complaint._id,
-          message: `${req.user.username} liked your ${complaint.type}.`,
-        });
+        const User = require('../models/User');
+        const postOwner = await User.findById(complaint.user).select('notificationPrefs');
+        if (postOwner?.notificationPrefs?.likes !== false) {
+          await Notification.create({
+            recipient: complaint.user,
+            sender: req.user._id,
+            type: 'like',
+            complaint: complaint._id,
+            message: `${req.user.username} liked your ${complaint.type}.`,
+          });
+        }
       }
     }
 
@@ -157,8 +145,6 @@ const toggleLike = async (req, res) => {
   }
 };
 
-// @desc    Save / Unsave a complaint (bookmark)
-// @route   PUT /api/complaints/:id/save
 const toggleSave = async (req, res) => {
   try {
     const User = require('../models/User');

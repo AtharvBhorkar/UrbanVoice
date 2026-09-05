@@ -1,8 +1,6 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
 
-// @desc    Send a message to another user
-// @route   POST /api/messages/:userId
 const sendMessage = async (req, res) => {
   try {
     const { text } = req.body;
@@ -19,6 +17,22 @@ const sendMessage = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    const sender = await User.findById(req.user._id).select('blockedUsers');
+
+    if (recipient.blockedUsers?.some((id) => id.toString() === req.user._id.toString())) {
+      return res.status(403).json({ message: 'You cannot message this user' });
+    }
+    if (sender.blockedUsers?.some((id) => id.toString() === recipient._id.toString())) {
+      return res.status(403).json({ message: 'Unblock this user to send a message' });
+    }
+
+    if (recipient.whoCanMessage === 'followers') {
+      const isFollower = recipient.followers.some((id) => id.toString() === req.user._id.toString());
+      if (!isFollower) {
+        return res.status(403).json({ message: 'This user only accepts messages from followers' });
+      }
+    }
+
     const message = await Message.create({
       sender: req.user._id,
       recipient: req.params.userId,
@@ -32,8 +46,6 @@ const sendMessage = async (req, res) => {
   }
 };
 
-// @desc    Get full conversation with a specific user
-// @route   GET /api/messages/:userId
 const getConversation = async (req, res) => {
   try {
     const messages = await Message.find({
@@ -45,7 +57,6 @@ const getConversation = async (req, res) => {
       .populate('sender', 'username avatar')
       .sort({ createdAt: 1 });
 
-    // Mark incoming messages from this user as read
     await Message.updateMany(
       { sender: req.params.userId, recipient: req.user._id, isRead: false },
       { isRead: true }
@@ -57,8 +68,6 @@ const getConversation = async (req, res) => {
   }
 };
 
-// @desc    Get list of all conversations (one entry per chat partner, most recent first)
-// @route   GET /api/messages
 const getConversations = async (req, res) => {
   try {
     const messages = await Message.find({

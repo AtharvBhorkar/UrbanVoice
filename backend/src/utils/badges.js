@@ -1,4 +1,3 @@
-// Har badge: id (unique), name, description, aur unlock hone ki condition (points ya type)
 const BADGES = [
   { id: 'first-voice', name: 'First Voice', description: 'Share your first post or reel', type: 'first_post' },
 

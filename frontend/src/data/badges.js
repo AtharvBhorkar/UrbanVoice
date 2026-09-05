@@ -1,6 +1,5 @@
 import { Award, Shield, Crown, Gem, Star, Flame, Diamond, Zap } from 'lucide-react';
 
-// ---- helpers ----
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII'];
 
 export function fmt(n) {

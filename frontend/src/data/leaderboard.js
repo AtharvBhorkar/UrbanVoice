@@ -17,8 +17,6 @@ export const RAW_ITEMS = [
   { user: 'sunrise_civic', avatar: 'SC', ring: 'from-rose-400 to-volt', category: 'Civic', location: 'Sunrise Apartments', caption: 'Speed breaker missing warning sign, near-miss reported.', likes: 1180, comments: 140, shares: 78, followers: 2700, views: 15600, icon: Building2 },
   { user: 'ward5_reporter', avatar: 'WR', ring: 'from-emerald-400 to-rose-400', category: 'Civic', location: 'Municipal Ward 5', caption: 'Garbage van skipped the entire lane again.', likes: 175, comments: 12, shares: 4, followers: 420, views: 2100, icon: Building2 },
 ];
-
-// weighted engagement score
 function computeScore(it) {
   return it.likes * 1 + it.comments * 2 + it.shares * 3 + it.followers * 0.4 + it.views * 0.05;
 }

@@ -88,6 +88,50 @@ const userSchema = new mongoose.Schema(
         ref: 'Complaint',
       },
     ],
+    blockedUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
+    showOnLeaderboard: {
+      type: Boolean,
+      default: true,
+    },
+    whoCanMessage: {
+      type: String,
+      enum: ['everyone', 'followers'],
+      default: 'everyone',
+    },
+    whoCanComment: {
+      type: String,
+      enum: ['everyone', 'followers'],
+      default: 'everyone',
+    },
+    dataSaver: {
+      type: Boolean,
+      default: false,
+    },
+    language: {
+      type: String,
+      default: 'English',
+    },
+    defaultWard: {
+      type: String,
+      default: '',
+    },
+    notificationPrefs: {
+      likes: { type: Boolean, default: true },
+      comments: { type: Boolean, default: true },
+      follows: { type: Boolean, default: true },
+      messages: { type: Boolean, default: true },
+      complaintUpdates: { type: Boolean, default: true },
+      email: { type: Boolean, default: false },
+    },
   },
   { timestamps: true }
 );

@@ -112,7 +112,7 @@ export default function LandingPage() {
                 }
             `}</style>
 
-            <Section className="relative pt-32 md:pt-40 pb-40 md:pb-56 bg-navy min-h-[110vh] overflow-hidden">
+           <Section className="relative pt-28 md:pt-40 pb-32 md:pb-56 bg-navy min-h-screen md:min-h-[110vh] overflow-hidden">
                 <video
                     autoPlay
                     loop
@@ -139,9 +139,9 @@ export default function LandingPage() {
                             variants={fadeUp}
                             className="font-display font-black text-[34px] leading-[1.15] md:text-[48px] lg:text-[56px] mt-5 tracking-tight text-volt"
                         >
-                            <span className="whitespace-nowrap gradient-text">One voice for every issue.</span>
-                            <br />
-                            <span className="whitespace-nowrap gradient-text">One platform for real change.</span>
+                            <span className="gradient-text">One voice for every issue.</span>
+                            <br className="hidden sm:block" />
+                            <span className="gradient-text">One platform for real change.</span>
                         </motion.h1>
                         <motion.p
                             variants={fadeUp}
@@ -289,7 +289,7 @@ export default function LandingPage() {
                         variants={fadeUp}
                         className="group relative rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-white overflow-hidden hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 min-h-[220px] md:min-h-[230px]"
                     >
-                        <div className="relative z-10 p-6 md:p-7 max-w-[62%]">
+                         <div className="relative z-10 p-6 md:p-7 max-w-[75%] sm:max-w-[62%]">
                             <div className="w-11 h-11 rounded-xl bg-orange-100 flex items-center justify-center">
                                 <Building2 size={20} className="text-orange-500" />
                             </div>
@@ -309,7 +309,7 @@ export default function LandingPage() {
                             </button>
                         </div>
 
-                        <div className="absolute right-0 top-0 w-[50%] h-full pointer-events-none">
+                         <div className="absolute right-0 top-0 w-[35%] sm:w-[50%] h-full pointer-events-none">
                             <img src={card1} alt="" className="w-full h-full object-contain object-right-bottom" />
                         </div>
                     </motion.div>
@@ -318,7 +318,7 @@ export default function LandingPage() {
                         variants={fadeUp}
                         className="group relative rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white overflow-hidden hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 min-h-[220px] md:min-h-[230px]"
                     >
-                        <div className="relative z-10 p-6 md:p-7 max-w-[62%]">
+                        <div className="relative z-10 p-6 md:p-7 max-w-[75%] sm:max-w-[62%]">
                             <div className="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center">
                                 <HomeIcon size={20} className="text-emerald-600" />
                             </div>
@@ -338,7 +338,7 @@ export default function LandingPage() {
                             </button>
                         </div>
 
-                        <div className="absolute right-0 top-0 w-[50%] h-full pointer-events-none">
+                        <div className="absolute right-0 top-0 w-[35%] sm:w-[50%] h-full pointer-events-none">
                             <img src={card2} alt="" className="w-full h-full object-contain object-right-bottom" />
                         </div>
                     </motion.div>
@@ -431,7 +431,7 @@ export default function LandingPage() {
                     <motion.div variants={fadeUp}>
                         <Eyebrow variant="light">Why UrbanVoice</Eyebrow>
                     </motion.div>
-                    <motion.h2 variants={fadeUp} className="font-display font-bold text-[26px] md:text-[42px] mt-4 text-black leading-tight max-w-4xl whitespace-nowrap">
+                    <motion.h2 variants={fadeUp} className="font-display font-bold text-[24px] sm:text-[32px] md:text-[42px] mt-4 text-black leading-tight max-w-4xl">
                         Everything a <span className="text-orange-500">resolved issue</span> needs.
                     </motion.h2>
                     <motion.p variants={fadeUp} className="font-body text-[15px] md:text-[16px] text-black/60 mt-4 max-w-lg leading-relaxed">
@@ -502,8 +502,7 @@ export default function LandingPage() {
                             variants={fadeUp}
                             className={`group relative rounded-2xl border ${f.border} bg-gradient-to-br ${f.cardBg} overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 min-h-[280px]`}
                         >
-                            <div className="relative z-10 p-6 pb-8 max-w-[62%]">
-                                <div className="flex items-start justify-between">
+ <div className="relative z-10 p-6 pb-8 max-w-[70%] sm:max-w-[62%]">                                <div className="flex items-start justify-between">
                                     <div className={`w-11 h-11 rounded-xl ${f.iconBg} flex items-center justify-center`}>
                                         <f.icon size={20} className={f.iconColor} />
                                     </div>
@@ -550,7 +549,7 @@ export default function LandingPage() {
                             Join the movement
                         </span>
 
-                        <h2 className="font-display font-bold text-[16px] md:text-[28px] leading-tight text-black mt-3 max-w-none whitespace-nowrap">
+                        <h2 className="font-display font-bold text-[20px] sm:text-[24px] md:text-[28px] leading-tight text-black mt-3 max-w-xl">
                             Your city is listening. Give it something to hear.
                         </h2>
 

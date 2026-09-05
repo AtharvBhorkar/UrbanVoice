@@ -1,30 +1,35 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import * as api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Home, Clapperboard, Trophy, PlusSquare,
-  Search, MessageCircle, Bell, User, Award,
-  Settings, HelpCircle, LogOut, Menu,} from 'lucide-react';
+  Rss, PlaySquare, Crown, CirclePlus,
+  ScanSearch, MessagesSquare, BellRing, User, Award,
+  Settings, HelpCircle, LogOut, Menu, ImagePlus, Clapperboard, ClipboardList,} from 'lucide-react';
 import logo from '../assets/logo.png';
 
 const NAV_ITEMS = [
-  { icon: Home, label: 'Home Feed', to: '/feed' },
-  { icon: Clapperboard, label: 'Reels', to: '/reels' },
-  { icon: Search, label: 'Search', to: '/search' },
-  { icon: MessageCircle, label: 'Messages', to: '/messages', badge: 3 },
-  { icon: PlusSquare, label: 'Create', to: '/create' },
-  { icon: Trophy, label: 'Leaderboard', to: '/leaderboard' },
+  { icon: Rss, label: 'Home Feed', to: '/feed' },
+  { icon: PlaySquare, label: 'Voice Reels', to: '/reels' },
+  { icon: ScanSearch, label: 'Search', to: '/search' },
+  { icon: MessagesSquare, label: 'Messages', to: '/messages' },
+  { icon: CirclePlus, label: 'Create', to: '/create' },
+  { icon: Crown, label: 'Leaderboard', to: '/leaderboard' },
 ];
 
 const PROFILE_MENU = [
   { icon: User, label: 'My Profile', to: '/profile' },
+  { icon: ClipboardList, label: 'My Complaints', to: '/my-complaints' },
   { icon: Award, label: 'My Badges', to: '/my-badges' },
 ];
 
+const MEDIA_BASE = 'http://localhost:5000';
+
 export default function Sidebar() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -43,13 +48,24 @@ export default function Sidebar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const loadUnread = () => {
+      api.getConversations()
+        .then((res) => setUnreadMessages(res.data.filter((c) => c.unread).length))
+        .catch(() => {});
+    };
+    loadUnread();
+    const interval = setInterval(loadUnread, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <motion.aside
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => { setExpanded(false); setProfileOpen(false); setMoreOpen(false); setCreateOpen(false); }}
       animate={{ width: expanded ? 240 : 76 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="fixed left-0 top-0 bottom-0 z-40 bg-ink-950 border-r border-ink-800 flex flex-col justify-between py-6 overflow-visible"
+      className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 bg-ink-950 border-r border-ink-800 flex-col justify-between py-6 overflow-visible"
     >
       <div>
         <NavLink to="/" className="flex items-center gap-3.5 px-[22px] mb-8">
@@ -101,8 +117,8 @@ export default function Sidebar() {
                         onClick={() => setCreateOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-text-dark hover:bg-ink-800 transition-colors"
                       >
-                        <PlusSquare size={17} />
-                        Post
+                        <ImagePlus size={17} />
+                        Voice Post
                       </NavLink>
                       <NavLink
                         to="/create-reel"
@@ -110,7 +126,7 @@ export default function Sidebar() {
                         className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-body text-text-dark hover:bg-ink-800 transition-colors"
                       >
                         <Clapperboard size={17} />
-                        Reel
+                        Voice Reel
                       </NavLink>
                     </motion.div>
                   )}
@@ -130,9 +146,9 @@ export default function Sidebar() {
               >
                 <span className="relative shrink-0">
                   <item.icon size={22} strokeWidth={2} />
-                  {item.badge && (
+                  {item.label === 'Messages' && unreadMessages > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-signal text-[10px] font-bold text-white flex items-center justify-center">
-                      {item.badge}
+                      {unreadMessages > 9 ? '9+' : unreadMessages}
                     </span>
                   )}
                 </span>
@@ -162,7 +178,7 @@ export default function Sidebar() {
           }
         >
           <span className="relative shrink-0">
-            <Bell size={22} strokeWidth={2} />
+            <BellRing size={22} strokeWidth={2} />
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-signal" />
           </span>
           <span
@@ -179,8 +195,12 @@ export default function Sidebar() {
             onClick={() => { setProfileOpen((v) => !v); setMoreOpen(false); }}
             className="w-full flex items-center gap-4 px-3 py-3 rounded-xl text-text-dark-muted hover:bg-ink-900 hover:text-text-dark transition-colors whitespace-nowrap"
           >
-            <span className="w-[22px] h-[22px] rounded-full bg-volt/20 border border-volt/40 flex items-center justify-center shrink-0">
-              <span className="text-volt text-[10px] font-bold font-body">AB</span>
+            <span className="w-[22px] h-[22px] rounded-full bg-volt/20 border border-volt/40 flex items-center justify-center shrink-0 overflow-hidden">
+              {user?.avatar ? (
+                <img src={`${MEDIA_BASE}${user.avatar}`} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-volt text-[10px] font-bold font-body">{user?.username?.slice(0, 2).toUpperCase()}</span>
+              )}
             </span>
             <span
               className={`text-[14.5px] font-body font-medium transition-opacity duration-200 ${

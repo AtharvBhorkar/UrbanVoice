@@ -57,7 +57,7 @@ function PostOptionsMenu({ onReport, onNotInterested, onShare, onCopyLink }) {
   const OPTIONS = [
     { label: 'Report', icon: Flag, danger: true, onClick: () => { onReport?.(); setOpen(false); } },
     { label: 'Not interested', icon: EyeOff, onClick: () => { onNotInterested?.(); setOpen(false); } },
-    { label: 'Share to...', icon: Share2, onClick: () => { onShare?.(); setOpen(false); } },
+    { label: 'Spread the Voice...', icon: Share2, onClick: () => { onShare?.(); setOpen(false); } },
     { label: copied ? 'Copied!' : 'Copy link', icon: copied ? Check : Link2, onClick: handleCopyLink },
   ];
 
@@ -95,7 +95,7 @@ function PostOptionsMenu({ onReport, onNotInterested, onShare, onCopyLink }) {
   );
 }
 
-function StoryRing({ name, ring, rank }) {
+function StoryRing({ name, ring, rank, avatarUrl }) {
   const navigate = useNavigate();
   const medal = RANK_MEDALS[rank];
   const isCenter = rank === 1;
@@ -119,10 +119,14 @@ function StoryRing({ name, ring, rank }) {
           }`}
         >
           <div className="w-full h-full rounded-full bg-ink-950 p-[2px]">
-            <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-              <span className={`font-semibold text-text-dark font-body ${isCenter ? 'text-[13px]' : 'text-[11px]'}`}>
-                {name.slice(0, 2).toUpperCase()}
-              </span>
+            <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+              {avatarUrl ? (
+                <img src={`${MEDIA_BASE}${avatarUrl}`} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className={`font-semibold text-text-dark font-body ${isCenter ? 'text-[13px]' : 'text-[11px]'}`}>
+                  {name.slice(0, 2).toUpperCase()}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -173,7 +177,6 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
         try {
           await navigator.share({ title: 'UrbanVoice Post', text: item.caption, url: shareUrl });
         } catch {
-          // user cancelled native share sheet
         }
       } else {
         await navigator.clipboard?.writeText(shareUrl);
@@ -332,7 +335,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
       </div>
 
       <div className="px-4 pt-2 pb-4">
-        <p className="text-[13.5px] font-semibold font-body text-text-dark">{likeCount} likes</p>
+        <p className="text-[13.5px] font-semibold font-body text-text-dark">{likeCount} Backed</p>
         <p className="text-[13.5px] font-body text-text-dark mt-1 leading-relaxed">
           <button onClick={() => navigate(`/profile/${item.user?.username}`)} className="font-semibold hover:underline">{item.user?.username}</button>{' '}
           <span className="text-text-dark-muted">{item.caption}</span>
@@ -376,9 +379,9 @@ export default function HomeFeedPage() {
     try {
       const res = await api.getLeaderboard();
       const RINGS = ['from-volt to-rose-400', 'from-signal to-volt', 'from-volt to-emerald-400', 'from-volt to-signal', 'from-signal to-volt'];
-      const top5 = res.data.slice(0, 5).map((u, i) => ({ rank: i + 1, name: u.username, ring: RINGS[i % RINGS.length] }));
+      const top5 = res.data.slice(0, 5).map((u, i) => ({ rank: i + 1, name: u.username, ring: RINGS[i % RINGS.length], avatarUrl: u.avatar }));
       setLeaders(top5);
-      setTopReporters(res.data.slice(0, 5).map((u) => ({ name: u.username, sub: `${u.score} points`, avatar: u.username.slice(0, 2).toUpperCase(), userId: u._id })));
+      setTopReporters(res.data.slice(0, 5).map((u) => ({ name: u.username, sub: `${u.score} points`, avatar: u.username.slice(0, 2).toUpperCase(), avatarUrl: u.avatar, userId: u._id })));
     } catch (err) {
       console.error('Failed to load leaderboard', err);
     }
@@ -389,7 +392,6 @@ export default function HomeFeedPage() {
   }, []);
 
   const handleToggleLike = async (id) => {
-    // optimistic-ish: call backend then refresh that item's likes from response isn't returned fully, so just refetch feed
     try {
       await api.toggleLike(id);
       setFeedItems((prev) =>
@@ -410,7 +412,7 @@ export default function HomeFeedPage() {
   const handleFollow = async (userId) => {
     try {
       await api.toggleFollow(userId);
-      showToast('Follow updated.');
+      showToast('Subscription updated.');
     } catch (err) {
       showToast('Could not follow user.');
     }
@@ -418,14 +420,14 @@ export default function HomeFeedPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen ml-[76px] bg-ink-950 flex items-center justify-center">
+      <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 flex items-center justify-center">
         <p className="text-text-dark-muted font-body">Loading feed...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950">
       <div className="max-w-[1100px] mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
 
         <div>
@@ -480,8 +482,12 @@ export default function HomeFeedPage() {
               <div key={i} className="flex items-center gap-3">
                 <button onClick={() => navigate(`/profile/${r.name}`)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
-                    <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center">
-                      <span className="text-[10px] font-semibold text-text-dark font-body">{r.avatar}</span>
+                    <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
+                      {r.avatarUrl ? (
+                        <img src={`${MEDIA_BASE}${r.avatarUrl}`} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] font-semibold text-text-dark font-body">{r.avatar}</span>
+                      )}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -493,7 +499,7 @@ export default function HomeFeedPage() {
                   onClick={() => handleFollow(r.userId)}
                   className="text-[12.5px] font-semibold font-body text-signal shrink-0"
                 >
-                  Follow
+                  Subscribe
                 </button>
               </div>
             ))}

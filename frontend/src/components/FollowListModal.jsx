@@ -7,7 +7,6 @@ import * as api from '../services/api';
 const MEDIA_BASE = 'http://localhost:5000';
 
 export default function FollowListModal({ open, onClose, username, type }) {
-  // type = 'followers' | 'following'
   const navigate = useNavigate();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +40,7 @@ export default function FollowListModal({ open, onClose, username, type }) {
             className="w-full max-w-[400px] max-h-[70vh] rounded-2xl border border-ink-700 bg-ink-900 overflow-hidden flex flex-col"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-ink-800 shrink-0">
-              <h2 className="text-[15px] font-display font-bold text-text-dark capitalize">{type}</h2>
+              <h2 className="text-[15px] font-display font-bold text-text-dark capitalize">{type === 'followers' ? 'Subscribers' : 'Subscriptions'}</h2>
               <button onClick={onClose} aria-label="Close">
                 <X size={18} className="text-text-dark-muted hover:text-text-dark transition-colors" />
               </button>
@@ -53,7 +52,7 @@ export default function FollowListModal({ open, onClose, username, type }) {
               )}
               {!loading && list.length === 0 && (
                 <p className="text-[13px] text-text-dark-muted font-body text-center py-8">
-                  No {type} yet.
+                  No {type === 'followers' ? 'subscribers' : 'subscriptions'} yet.
                 </p>
               )}
               {!loading &&

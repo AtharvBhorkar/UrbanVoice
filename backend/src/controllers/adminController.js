@@ -91,6 +91,35 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  try {
+    const { role, department } = req.body;
+    const validRoles = ['user', 'admin'];
+    const validDepartments = ['Water', 'Electricity', 'Sanitation', 'Roads', 'Civic', 'Society', 'General'];
+
+    if (role && !validRoles.includes(role)) {
+      return res.status(400).json({ message: 'Invalid role' });
+    }
+    if (department && !validDepartments.includes(department)) {
+      return res.status(400).json({ message: 'Invalid department' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (role) user.role = role;
+    if (department) user.department = department;
+
+    await user.save();
+    const updated = await User.findById(user._id).select('-password');
+    res.status(200).json(updated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const getAnalytics = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
@@ -100,7 +129,6 @@ const getAnalytics = async (req, res) => {
     const resolved = await Complaint.countDocuments({ status: 'Resolved' });
     const rejected = await Complaint.countDocuments({ status: 'Rejected' });
 
-    // average resolution time (din mein) — sirf resolved complaints par
     const resolvedComplaints = await Complaint.find({ status: 'Resolved' }).select(
       'createdAt statusHistory'
     );
@@ -116,7 +144,6 @@ const getAnalytics = async (req, res) => {
       avgResolutionDays = Math.round((totalDays / resolvedComplaints.length) * 10) / 10;
     }
 
-    // SLA breach count
     const slaBreached = await Complaint.countDocuments({
       status: { $nin: ['Resolved', 'Rejected'] },
       expectedResolutionDate: { $lt: new Date() },
@@ -137,4 +164,59 @@ const getAnalytics = async (req, res) => {
   }
 };
 
-module.exports = { getAllComplaints, updateComplaintStatus, getAllUsers, getAnalytics };
+const exportComplaintsCSV = async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.category) filter.category = req.query.category;
+    if (req.query.department) filter.department = req.query.department;
+
+    const complaints = await Complaint.find(filter)
+      .populate('user', 'username fullName')
+      .sort({ createdAt: -1 });
+
+    const header = [
+      'Ticket ID', 'Category', 'Department', 'Status', 'Priority',
+      'User', 'Location', 'Created At', 'Resolution Note', 'SLA Breached',
+    ];
+
+    const rows = complaints.map((c) => {
+      const slaBreached =
+        c.status !== 'Resolved' &&
+        c.status !== 'Rejected' &&
+        c.expectedResolutionDate &&
+        new Date() > new Date(c.expectedResolutionDate);
+
+      return [
+        c.ticketId,
+        c.category,
+        c.department,
+        c.status,
+        c.priorityScore,
+        c.user?.username || '',
+        c.location || '',
+        new Date(c.createdAt).toISOString(),
+        c.resolutionNote || '',
+        slaBreached ? 'Yes' : 'No',
+      ];
+    });
+
+    const escapeCell = (val) => `"${String(val).replace(/"/g, '""')}"`;
+    const csv = [header, ...rows].map((row) => row.map(escapeCell).join(',')).join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="urbanvoice-complaints.csv"');
+    res.status(200).send(csv);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  getAllComplaints,
+  updateComplaintStatus,
+  getAllUsers,
+  getAnalytics,
+  updateUser,
+  exportComplaintsCSV,
+};

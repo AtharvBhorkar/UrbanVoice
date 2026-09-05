@@ -87,8 +87,7 @@ function Squiggle({ className = '' }) {
   );
 }
 
-function ProgressRing({ resolved, total, pct }) {
-  const size = 76;
+function ProgressRing({ resolved, total, pct, size = 76 }) {
   const stroke = 5;
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
@@ -333,10 +332,10 @@ export default function CommunityImpactPage() {
 
             <motion.h1
               variants={fadeUp}
-              className="font-display font-bold text-[36px] leading-[1.15] md:text-[54px] mt-5 tracking-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]"
+              className="font-display font-bold text-[30px] leading-[1.15] sm:text-[36px] md:text-[54px] mt-5 tracking-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]"
             >
-              <span className="block whitespace-nowrap gradient-text">What happens when</span>
-              <span className="block whitespace-nowrap gradient-text">a city actually listens.</span>
+              <span className="block md:whitespace-nowrap gradient-text">What happens when</span>
+              <span className="block md:whitespace-nowrap gradient-text">a city actually listens.</span>
             </motion.h1>
 
             <motion.p
@@ -378,7 +377,7 @@ export default function CommunityImpactPage() {
           className="max-w-2xl mx-auto text-center flex flex-col items-center"
         >
           <Eyebrow dark>By neighbourhood</Eyebrow>
-          <h2 className="font-display font-bold text-[26px] md:text-[38px] mt-4 text-white leading-tight whitespace-nowrap">
+          <h2 className="font-display font-bold text-[24px] sm:text-[28px] md:text-[38px] mt-4 text-white leading-tight md:whitespace-nowrap">
             Where things are <span className="text-signal">actually getting</span> fixed.
           </h2>
           <p className="font-body text-[15px] md:text-[16px] text-volt/60 mt-5 leading-relaxed max-w-md">
@@ -422,9 +421,9 @@ export default function CommunityImpactPage() {
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0 flex items-center gap-5 px-5 md:px-7 py-5">
+                <div className="flex-1 min-w-0 flex items-center gap-3 sm:gap-5 px-3.5 sm:px-5 md:px-7 py-4 sm:py-5">
                   <div className="flex-1 min-w-0">
-                    <p className="font-display font-semibold text-[18px] md:text-[19px] text-white truncate">{w.name}</p>
+                    <p className="font-display font-semibold text-[15px] sm:text-[18px] md:text-[19px] text-white truncate">{w.name}</p>
                     <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-volt/10">
                       <p className="font-body text-[12px] text-volt">{w.status}</p>
                       {w.squiggle && <Squiggle className="text-volt/70" />}
@@ -441,7 +440,7 @@ export default function CommunityImpactPage() {
                     </div>
                   </div>
 
-                  <ProgressRing resolved={w.resolved} total={w.total} pct={pct} />
+                  <ProgressRing resolved={w.resolved} total={w.total} pct={pct} size={56} />
 
                   <button
                     type="button"
@@ -479,7 +478,7 @@ export default function CommunityImpactPage() {
 
         <motion.div
           initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={stagger}
-          className="grid md:grid-cols-3 gap-6 mt-8 relative z-10"
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 relative z-10"
         >
           {STORIES.map((s, i) => (
             <motion.div
@@ -489,7 +488,7 @@ export default function CommunityImpactPage() {
               transition={{ duration: 0.3, ease: 'easeOut' }}
               className={`group relative rounded-3xl bg-gradient-to-br ${s.cardBg} p-5 flex flex-col shadow-[0_4px_20px_-8px_rgba(10,22,40,0.15)] hover:shadow-[0_16px_40px_-12px_rgba(10,22,40,0.25)] transition-shadow duration-300 overflow-hidden`}
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold font-body ${s.tagBg}`}>
                   <s.icon size={12} className={s.tagIconColor} />
                   {s.category}
@@ -849,7 +848,7 @@ export default function CommunityImpactPage() {
               Join the movement
             </span>
 
-            <h2 className="font-display font-bold text-[22px] md:text-[36px] leading-tight text-black mt-3 max-w-none whitespace-nowrap">
+            <h2 className="font-display font-bold text-[19px] sm:text-[24px] md:text-[36px] leading-tight text-black mt-3 max-w-lg">
               Your neighbourhood could be next on this list.
             </h2>
 

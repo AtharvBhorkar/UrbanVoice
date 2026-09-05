@@ -4,8 +4,6 @@ const Engagement = require('../models/Engagement');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 
-// @desc    Add a comment to a complaint
-// @route   POST /api/engagement/:id/comment
 const addComment = async (req, res) => {
   try {
     const { text } = req.body;
@@ -18,13 +16,26 @@ const addComment = async (req, res) => {
       return res.status(404).json({ message: 'Not found' });
     }
 
+    const postOwner = await User.findById(complaint.user);
+
+    if (postOwner.blockedUsers?.some((id) => id.toString() === req.user._id.toString())) {
+      return res.status(403).json({ message: 'You cannot comment on this post' });
+    }
+
+    if (postOwner.whoCanComment === 'followers' && complaint.user.toString() !== req.user._id.toString()) {
+      const isFollower = postOwner.followers.some((id) => id.toString() === req.user._id.toString());
+      if (!isFollower) {
+        return res.status(403).json({ message: 'Only followers can comment on this post' });
+      }
+    }
+
     const comment = await Comment.create({
       complaint: complaint._id,
       user: req.user._id,
       text: text.trim(),
     });
 
-    if (complaint.user.toString() !== req.user._id.toString()) {
+    if (complaint.user.toString() !== req.user._id.toString() && postOwner.notificationPrefs?.comments !== false) {
       await Notification.create({
         recipient: complaint.user,
         sender: req.user._id,
@@ -41,8 +52,6 @@ const addComment = async (req, res) => {
   }
 };
 
-// @desc    Get all comments of a complaint (oldest first)
-// @route   GET /api/engagement/:id/comments
 const getComments = async (req, res) => {
   try {
     const comments = await Comment.find({ complaint: req.params.id })
@@ -55,8 +64,6 @@ const getComments = async (req, res) => {
   }
 };
 
-// @desc    Register a view (once per user per complaint)
-// @route   POST /api/engagement/:id/view
 const addView = async (req, res) => {
   try {
     await Engagement.create({
@@ -74,7 +81,6 @@ const addView = async (req, res) => {
     res.status(200).json({ views: complaint.views });
   } catch (error) {
     if (error.code === 11000) {
-      // duplicate - already viewed by this user, ignore silently
       const complaint = await Complaint.findById(req.params.id);
       return res.status(200).json({ views: complaint.views });
     }
@@ -82,8 +88,6 @@ const addView = async (req, res) => {
   }
 };
 
-// @desc    Register a share (once per user per complaint)
-// @route   POST /api/engagement/:id/share
 const addShare = async (req, res) => {
   try {
     await Engagement.create({
@@ -108,8 +112,6 @@ const addShare = async (req, res) => {
   }
 };
 
-// @desc    Follow / Unfollow a user (toggle)
-// @route   PUT /api/engagement/follow/:userId
 const toggleFollow = async (req, res) => {
   try {
     if (req.params.userId === req.user._id.toString()) {
@@ -121,6 +123,10 @@ const toggleFollow = async (req, res) => {
 
     if (!targetUser) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (targetUser.blockedUsers?.some((id) => id.toString() === currentUser._id.toString())) {
+      return res.status(403).json({ message: 'You cannot follow this user' });
     }
 
     const isFollowing = currentUser.following.some(
@@ -138,12 +144,14 @@ const toggleFollow = async (req, res) => {
       currentUser.following.push(targetUser._id);
       targetUser.followers.push(currentUser._id);
 
-      await Notification.create({
-        recipient: targetUser._id,
-        sender: currentUser._id,
-        type: 'follow',
-        message: `${currentUser.username} started following you.`,
-      });
+      if (targetUser.notificationPrefs?.follows !== false) {
+        await Notification.create({
+          recipient: targetUser._id,
+          sender: currentUser._id,
+          type: 'follow',
+          message: `${currentUser.username} started following you.`,
+        });
+      }
     }
 
     await currentUser.save();
@@ -158,8 +166,6 @@ const toggleFollow = async (req, res) => {
   }
 };
 
-// @desc    Get logged-in user's notifications
-// @route   GET /api/engagement/notifications
 const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ recipient: req.user._id })
@@ -172,8 +178,6 @@ const getNotifications = async (req, res) => {
   }
 };
 
-// @desc    Mark all notifications as read
-// @route   PUT /api/engagement/notifications/read
 const markNotificationsRead = async (req, res) => {
   try {
     await Notification.updateMany({ recipient: req.user._id, isRead: false }, { isRead: true });

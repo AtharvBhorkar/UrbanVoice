@@ -37,7 +37,6 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
         try {
           await navigator.share({ title: 'UrbanVoice Reel', text: item.caption, url: shareUrl });
         } catch {
-          // user cancelled the native share sheet — no error toast needed
         }
       } else {
         await navigator.clipboard?.writeText(shareUrl);
@@ -68,7 +67,6 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
     setMuted(videoRef.current.muted);
   };
 
-  // Register a view once, when the reel has played a bit
   const handleTimeUpdate = () => {
     if (!viewRegistered && videoRef.current && videoRef.current.currentTime > 3) {
       setViewRegistered(true);
@@ -193,7 +191,7 @@ export default function ReelsPage() {
 
   if (loading) {
     return (
-      <div className="ml-[76px] h-screen flex items-center justify-center bg-black">
+      <div className="ml-0 md:ml-[76px] h-screen flex items-center justify-center bg-black">
         <p className="text-text-dark-muted font-body">Loading reels...</p>
       </div>
     );
@@ -201,14 +199,14 @@ export default function ReelsPage() {
 
   if (reels.length === 0) {
     return (
-      <div className="ml-[76px] h-screen flex items-center justify-center bg-black">
+      <div className="ml-0 md:ml-[76px] h-screen flex items-center justify-center bg-black">
         <p className="text-text-dark-muted font-body">No reels yet. Be the first to post one!</p>
       </div>
     );
   }
 
   return (
-    <div className="ml-[76px] h-screen overflow-y-scroll snap-y snap-mandatory bg-black scrollbar-hide">
+    <div className="ml-0 md:ml-0 md:ml-[76px] h-screen overflow-y-scroll snap-y snap-mandatory bg-black scrollbar-hide">
       {reels.map((item) => (
         <ReelItem
           key={item._id}

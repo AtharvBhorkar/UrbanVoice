@@ -19,7 +19,7 @@ const complaintSchema = new mongoose.Schema(
     },
     department: {
       type: String,
-      enum: ['Water', 'Electricity', 'Sanitation', 'Roads', 'Civic', 'Society', 'General'],
+      trim: true,
       default: 'General',
     },
     caption: {
@@ -38,7 +38,7 @@ const complaintSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Civic', 'Society', 'Roads', 'Water', 'Electricity', 'Sanitation', 'Other'],
+      trim: true,
       default: 'Other',
     },
     location: {
@@ -115,8 +115,22 @@ const complaintSchema = new mongoose.Schema(
 complaintSchema.pre('save', async function (next) {
   if (this.isNew && !this.ticketId) {
     const year = new Date().getFullYear();
-    const count = await mongoose.model('Complaint').countDocuments();
-    this.ticketId = `UV-${year}-${String(count + 1).padStart(5, '0')}`;
+    const Complaint = mongoose.model('Complaint');
+    let ticketId;
+    let attempts = 0;
+
+    while (attempts < 5) {
+      const count = await Complaint.countDocuments();
+      const candidate = `UV-${year}-${String(count + 1 + attempts).padStart(5, '0')}`;
+      const clash = await Complaint.findOne({ ticketId: candidate });
+      if (!clash) {
+        ticketId = candidate;
+        break;
+      }
+      attempts += 1;
+    }
+
+    this.ticketId = ticketId;
   }
   next();
 });

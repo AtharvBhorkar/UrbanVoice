@@ -1,7 +1,6 @@
 const BADGES = require('./badges');
 const Complaint = require('../models/Complaint');
 
-// User ke current points/activity check karke jo naye badges unlock hue hain unhe add karta hai
 const checkAndUnlockBadges = async (user) => {
   const newlyUnlocked = [];
 

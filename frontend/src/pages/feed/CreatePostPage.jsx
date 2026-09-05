@@ -27,6 +27,14 @@ export default function CreatePostPage() {
   const [error, setError] = useState('');
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('Other');
+
+  useEffect(() => {
+    api.getCategories()
+      .then((res) => setCategories(res.data))
+      .catch(() => {});
+  }, []);
   const [zoom, setZoom] = useState(1);
   const [fillMode, setFillMode] = useState(false);
   const [aspectIndex, setAspectIndex] = useState(0);
@@ -62,7 +70,7 @@ export default function CreatePostPage() {
       const formData = new FormData();
       formData.append('type', 'post');
       formData.append('caption', caption);
-      formData.append('category', 'Other');
+      formData.append('category', selectedCategory);
       formData.append('location', selectedLocation || '');
       formData.append('media', file);
 
@@ -93,7 +101,7 @@ export default function CreatePostPage() {
   };
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 flex items-center justify-center px-6">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 flex items-center justify-center px-6">
       <div className={`w-full rounded-2xl bg-ink-900 border border-ink-700 overflow-hidden shadow-2xl transition-all duration-200 ${step === 'details' ? 'max-w-[1000px]' : 'max-w-[550px]'}`}>
         {step === 'crop' && file && previewUrl ? (
           <>
@@ -202,6 +210,23 @@ export default function CreatePostPage() {
                   <div className="flex items-center justify-end mt-2 mb-3">
                     <span className="text-[11px] font-body text-text-dark-muted">{caption.length}/2,200</span>
                   </div>
+                </div>
+
+                <div className="border-t border-ink-800 px-4 py-3.5">
+                  <label className="text-[12px] font-body text-text-dark-muted block mb-1.5">Category</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full bg-ink-800 border border-ink-700 rounded-lg px-3 py-2 text-[13.5px] font-body text-text-dark focus:outline-none focus:border-signal"
+                  >
+                    {categories.length === 0 ? (
+                      <option value="Other">Other</option>
+                    ) : (
+                      categories.map((c) => (
+                        <option key={c._id} value={c.name}>{c.name}</option>
+                      ))
+                    )}
+                  </select>
                 </div>
 
                 <div className="border-t border-ink-800">

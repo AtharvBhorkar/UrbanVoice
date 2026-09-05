@@ -3,11 +3,8 @@ const Comment = require('../models/Comment');
 const User = require('../models/User');
 const checkAndUnlockBadges = require('../utils/checkBadges');
 
-// @desc    Get community leaderboard - ranked by likes+comments+shares+followers+views combined
-// @route   GET /api/leaderboard
 const getLeaderboard = async (req, res) => {
   try {
-    // Step 1: likes + shares + views totals, grouped per user (post owner)
     const complaintStats = await Complaint.aggregate([
       {
         $group: {
@@ -19,7 +16,6 @@ const getLeaderboard = async (req, res) => {
       },
     ]);
 
-    // Step 2: comment counts, grouped per post-owner (via lookup to complaints)
     const commentStats = await Comment.aggregate([
       {
         $lookup: {
@@ -38,16 +34,15 @@ const getLeaderboard = async (req, res) => {
       },
     ]);
 
-    // Step 3: build a lookup map for comments
     const commentMap = {};
     commentStats.forEach((c) => {
       commentMap[c._id.toString()] = c.totalComments;
     });
 
-    // Step 4: get all users with their followers count + profile info
-    const users = await User.find().select('username avatar fullName location followers');
+    const users = (await User.find().select('username avatar fullName location followers showOnLeaderboard')).filter(
+      (u) => u.showOnLeaderboard !== false
+    );
 
-    // Step 5: combine everything into one score per user
     const leaderboard = users.map((user) => {
       const stats = complaintStats.find((s) => s._id.toString() === user._id.toString());
       const totalLikes = stats ? stats.totalLikes : 0;
@@ -73,13 +68,11 @@ const getLeaderboard = async (req, res) => {
       };
     });
 
-    // Step 6: sort descending by score, only show users with activity
     const ranked = leaderboard
       .filter((u) => u.score > 0)
       .sort((a, b) => b.score - a.score)
       .map((u, index) => ({ rank: index + 1, ...u }));
 
-    // Step 7: keep User.points in sync, then check for newly unlocked badges
     await Promise.all(
       ranked.map(async (u) => {
         const dbUser = await User.findByIdAndUpdate(u._id, { points: u.score }, { new: true });
@@ -93,8 +86,6 @@ const getLeaderboard = async (req, res) => {
   }
 };
 
-// @desc    Get top 5 users for Home Feed sidebar
-// @route   GET /api/leaderboard/top5
 const getTop5 = async (req, res) => {
   try {
     req.query.limit = 5;
@@ -130,7 +121,9 @@ const getTop5 = async (req, res) => {
       commentMap[c._id.toString()] = c.totalComments;
     });
 
-    const users = await User.find().select('username avatar fullName location followers');
+    const users = (await User.find().select('username avatar fullName location followers showOnLeaderboard')).filter(
+      (u) => u.showOnLeaderboard !== false
+    );
 
     const leaderboard = users
       .map((user) => {

@@ -24,13 +24,13 @@ export default function SearchPage() {
         .then((res) => setResults(res.data))
         .catch(() => setResults([]))
         .finally(() => setLoading(false));
-    }, 300); // debounce so it doesn't fire on every keystroke
+    }, 300);
 
     return () => clearTimeout(timeout);
   }, [query]);
 
   return (
-    <div className="min-h-screen ml-[76px] bg-ink-950 px-6 py-6">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 px-6 py-6">
       <div className="max-w-[640px] mx-auto">
         <div className="relative mb-8">
           <SearchIcon

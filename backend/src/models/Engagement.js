@@ -21,7 +21,6 @@ const engagementSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Ek user ek complaint ko ek type ke andar sirf ek baar count kare
 engagementSchema.index({ user: 1, complaint: 1, type: 1 }, { unique: true });
 
 module.exports = mongoose.model('Engagement', engagementSchema);
