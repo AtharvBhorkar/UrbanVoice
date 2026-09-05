@@ -31,6 +31,14 @@ import MyComplaintsPage from './pages/feed/MyComplaintsPage.jsx';
 import LandingPage from './pages/public/LandingPage.jsx';
 import AboutPage from './pages/public/AboutPage.jsx';
 import CommunityImpactPage from './pages/extra/CommunityImpactPage.jsx';
+import HowItWorksPage from './pages/extra/HowItWorksPage.jsx';
+import TrackComplaintPage from './pages/extra/TrackComplaintPage.jsx';
+import DepartmentsPage from './pages/extra/DepartmentsPage.jsx';
+import ContactUsPage from './pages/extra/ContactUsPage.jsx';
+import PrivacyPolicyPage from './pages/extra/PrivacyPolicyPage.jsx';
+import TermsOfServicePage from './pages/extra/TermsOfServicePage.jsx';
+import PriorityEscalationPage from './pages/extra/PriorityEscalationPage.jsx';
+import ReportingGuidelinesPage from './pages/extra/ReportingGuidelinesPage.jsx';
 import LoginPage from './pages/public/LoginPage.jsx';
 import SignupPage from './pages/public/SignupPage.jsx';
 import ForgotPasswordPage from './pages/public/ForgotPasswordPage.jsx';
@@ -126,6 +134,14 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/community-impact" element={<CommunityImpactPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/track-complaint" element={<TrackComplaintPage />} />
+        <Route path="/departments" element={<DepartmentsPage />} />
+        <Route path="/contact" element={<ContactUsPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+        <Route path="/priority-escalation" element={<PriorityEscalationPage />} />
+        <Route path="/reporting-guidelines" element={<ReportingGuidelinesPage />} />
       </Routes>
       <Footer />
     </>

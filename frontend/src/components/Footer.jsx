@@ -6,11 +6,23 @@ const FOOTER_LINKS = {
   Platform: [
     { label: 'Home', to: '/' },
     { label: 'Explore', to: '/feed' },
+    { label: 'How it works', to: '/how-it-works' },
+    { label: 'Track complaint', to: '/track-complaint' },
+    { label: 'Departments', to: '/departments' },
   ],
   Company: [
     { label: 'About us', to: '/about' },
     { label: 'Help & FAQ', to: '/help' },
     { label: 'Community impact', to: '/community-impact' },
+    { label: 'Contact us', to: '/contact' },
+  ],
+  Resources: [
+    { label: 'Reporting guidelines', to: '/reporting-guidelines' },
+    { label: 'Priority & escalation', to: '/priority-escalation' },
+  ],
+  Legal: [
+    { label: 'Privacy policy', to: '/privacy-policy' },
+    { label: 'Terms of service', to: '/terms-of-service' },
   ],
 };
 
@@ -25,8 +37,8 @@ export default function Footer() {
   return (
     <footer className="bg-navy border-t border-volt/10">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 pt-16 pb-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
-          <div className="col-span-2 md:col-span-2 pr-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-x-6 gap-y-10 md:gap-x-8">
+          <div className="col-span-2 md:col-span-2 pr-0 md:pr-4">
             <Link to="/" className="flex items-center gap-2.5">
               <img src={logo} alt="" className="w-8 h-8 object-contain" />
               <span className="font-display font-bold text-[18px] text-volt">
@@ -54,7 +66,7 @@ export default function Footer() {
           </div>
 
           {Object.entries(FOOTER_LINKS).map(([heading, links]) => (
-            <div key={heading}>
+            <div key={heading} className="col-span-1">
               <h4 className="font-body text-[13px] font-semibold uppercase tracking-wide text-volt/50">
                 {heading}
               </h4>
