@@ -195,7 +195,7 @@ export default function CreateReelPage() {
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
                     <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                       {user?.avatar ? (
-                        <img src={`http://localhost:5000${user.avatar}`} alt="" className="w-full h-full object-cover" />
+                        <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar}`} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-[10px] font-semibold text-text-dark font-body">
                           {user?.username?.slice(0, 2).toUpperCase()}

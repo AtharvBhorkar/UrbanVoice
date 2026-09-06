@@ -22,7 +22,7 @@ function timeAgo(dateStr) {
   return `${Math.floor(days / 7)}w ago`;
 }
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const TABS = [
   { id: 'reels', icon: Clapperboard, label: 'Voice Reels' },

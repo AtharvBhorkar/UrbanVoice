@@ -24,7 +24,7 @@ const PROFILE_MENU = [
   { icon: Award, label: 'My Badges', to: '/my-badges' },
 ];
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 export default function Sidebar() {
   const navigate = useNavigate();

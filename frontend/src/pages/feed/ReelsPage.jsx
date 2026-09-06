@@ -6,7 +6,7 @@ import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import CommentsModal from '../../components/CommentsModal';
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBump, onShare }) {
   const navigate = useNavigate();

@@ -4,7 +4,7 @@ import { X, Send } from 'lucide-react';
 import * as api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 function timeAgo(dateStr) {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);

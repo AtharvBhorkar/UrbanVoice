@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search as SearchIcon } from 'lucide-react';
 import * as api from '../../services/api';
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 const RINGS = ['from-signal to-volt', 'from-volt to-emerald-400', 'from-signal to-rose-400', 'from-volt to-signal', 'from-emerald-400 to-volt', 'from-rose-400 to-signal'];
 
 export default function SearchPage() {

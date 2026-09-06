@@ -12,7 +12,7 @@ import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import FollowListModal from '../../components/FollowListModal';
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say', 'Custom'];
 

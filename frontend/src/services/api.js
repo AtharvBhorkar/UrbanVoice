@@ -73,4 +73,6 @@ export const getConversations = () => api.get('/messages');
 export const getConversation = (userId) => api.get(`/messages/${userId}`);
 export const sendMessage = (userId, text) => api.post(`/messages/${userId}`, { text });
 
+export const MEDIA_BASE_URL = API_BASE_URL.replace('/api', '');
+
 export default api;

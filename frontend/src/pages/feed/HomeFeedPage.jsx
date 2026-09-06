@@ -9,7 +9,7 @@ import {
   Flag, EyeOff, Share2, Link2, Check, Crown, Shield, Rocket,
 } from 'lucide-react';
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const RANK_MEDALS = {
   1: { Icon: Crown, disc: 'from-[#fff6da] via-[#f5d576] to-[#b8860b]' },

@@ -6,7 +6,7 @@ import {
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 function Avatar({ user, size = 'w-14 h-14' }) {
   const avatarUrl = user?.avatar ? `${MEDIA_BASE}${user.avatar}` : null;

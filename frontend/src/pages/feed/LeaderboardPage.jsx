@@ -8,7 +8,7 @@ import {
 import { useEffect } from 'react';
 import * as api from '../../services/api';
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 const RINGS = [
   'from-volt to-rose-400', 'from-signal to-volt', 'from-volt to-emerald-400',
   'from-volt to-signal', 'from-signal to-volt', 'from-emerald-400 to-volt',

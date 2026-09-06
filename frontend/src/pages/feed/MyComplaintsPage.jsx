@@ -6,7 +6,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import * as api from '../../services/api';
 
-const MEDIA_BASE = 'http://localhost:5000';
+const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const STATUS_TABS = ['All', 'Pending', 'In Progress', 'Resolved', 'Rejected'];
 
