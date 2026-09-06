@@ -76,7 +76,7 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
 
   return (
     <div className="relative w-full h-screen snap-start flex items-center justify-center bg-black">
-      <div className="relative w-[420px] h-[94vh] max-h-[880px] rounded-2xl overflow-hidden bg-ink-900">
+      <div className="relative w-full h-full sm:w-[420px] sm:h-[94vh] sm:max-h-[880px] sm:rounded-2xl overflow-hidden bg-ink-900">
         <video
           ref={videoRef}
           src={videoUrl}
@@ -100,14 +100,14 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
 
         <button
           onClick={toggleMute}
-          className="absolute top-6 right-6 w-9 h-9 rounded-full bg-ink-950/60 flex items-center justify-center text-text-dark z-20"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 w-9 h-9 rounded-full bg-ink-950/60 flex items-center justify-center text-text-dark z-20"
         >
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
 
         <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-10" />
 
-        <div className="absolute left-4 right-16 bottom-8 text-text-dark z-10">
+        <div className="absolute left-4 right-16 bottom-24 sm:bottom-8 text-text-dark z-10">
           <button
             onClick={() => navigate(`/profile/${item.user?.username}`)}
             className="flex items-center gap-2 mb-2"
@@ -131,21 +131,21 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
           </div>
           <p className="text-[13.5px] font-body leading-relaxed">{item.caption}</p>
         </div>
-      </div>
 
-      <div className="absolute right-[calc(50%-198px)] bottom-8 flex flex-col items-center gap-5 z-20">
-        <button onClick={() => onToggleLike(item._id)} className="flex flex-col items-center gap-1">
-          <Heart size={26} className={liked ? 'text-signal fill-signal' : 'text-text-dark'} />
-          <span className="text-[11px] font-body text-text-dark-muted">{likeCount}</span>
-        </button>
-        <button onClick={() => onOpenComments(item._id)} className="flex flex-col items-center gap-1">
-          <MessageCircle size={26} className="text-text-dark" />
-          <span className="text-[11px] font-body text-text-dark-muted">{commentCount + (commentBump || 0)}</span>
-        </button>
-        <button onClick={handleShareClick} disabled={sharing} className="flex flex-col items-center gap-1">
-          <Send size={22} className="text-text-dark" />
-          <span className="text-[11px] font-body text-text-dark-muted">{shareCount}</span>
-        </button>
+        <div className="absolute right-3 sm:right-4 bottom-24 sm:bottom-8 flex flex-col items-center gap-5 z-20">
+          <button onClick={() => onToggleLike(item._id)} className="flex flex-col items-center gap-1">
+            <Heart size={26} className={liked ? 'text-signal fill-signal' : 'text-text-dark'} />
+            <span className="text-[11px] font-body text-text-dark-muted">{likeCount}</span>
+          </button>
+          <button onClick={() => onOpenComments(item._id)} className="flex flex-col items-center gap-1">
+            <MessageCircle size={26} className="text-text-dark" />
+            <span className="text-[11px] font-body text-text-dark-muted">{commentCount + (commentBump || 0)}</span>
+          </button>
+          <button onClick={handleShareClick} disabled={sharing} className="flex flex-col items-center gap-1">
+            <Send size={22} className="text-text-dark" />
+            <span className="text-[11px] font-body text-text-dark-muted">{shareCount}</span>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -206,7 +206,7 @@ export default function ReelsPage() {
   }
 
   return (
-    <div className="ml-0 md:ml-0 md:ml-[76px] h-screen overflow-y-scroll snap-y snap-mandatory bg-black scrollbar-hide">
+    <div className="ml-0 md:ml-[76px] h-screen overflow-y-scroll snap-y snap-mandatory bg-black scrollbar-hide">
       {reels.map((item) => (
         <ReelItem
           key={item._id}
