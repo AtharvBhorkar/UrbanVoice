@@ -24,7 +24,7 @@ const PROFILE_MENU = [
   { icon: Award, label: 'My Badges', to: '/my-badges' },
 ];
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+import { mediaUrl } from '../services/api';
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -197,7 +197,7 @@ export default function Sidebar() {
           >
             <span className="w-[22px] h-[22px] rounded-full bg-volt/20 border border-volt/40 flex items-center justify-center shrink-0 overflow-hidden">
               {user?.avatar ? (
-                <img src={`${MEDIA_BASE}${user.avatar}`} alt="" className="w-full h-full object-cover" />
+                <img src={mediaUrl(user.avatar)} alt="" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-volt text-[10px] font-bold font-body">{user?.username?.slice(0, 2).toUpperCase()}</span>
               )}

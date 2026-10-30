@@ -4,7 +4,7 @@ import { X, Send } from 'lucide-react';
 import * as api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+import { mediaUrl } from '../services/api';
 
 function timeAgo(dateStr) {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -87,7 +87,7 @@ export default function CommentsModal({ complaintId, open, onClose, onCommentAdd
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
                     <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                       {c.user?.avatar ? (
-                        <img src={`${MEDIA_BASE}${c.user.avatar}`} alt="" className="w-full h-full object-cover" />
+                        <img src={mediaUrl(c.user.avatar)} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-[9px] font-semibold text-text-dark font-body">
                           {c.user?.username?.slice(0, 2).toUpperCase()}

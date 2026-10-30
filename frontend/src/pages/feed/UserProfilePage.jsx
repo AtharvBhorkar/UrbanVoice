@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,7 +23,6 @@ function timeAgo(dateStr) {
   return `${Math.floor(days / 7)}w ago`;
 }
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const TABS = [
   { id: 'reels', icon: Clapperboard, label: 'Voice Reels' },
@@ -240,7 +240,7 @@ export default function UserProfilePage() {
           <div className="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] rounded-full bg-gradient-to-tr from-signal to-volt p-[3px] shrink-0">
             <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
               {profile.avatar ? (
-                <img src={`${MEDIA_BASE}${profile.avatar}`} alt={profile.username} className="w-full h-full object-cover" />
+                <img src={`${mediaSrc(profile.avatar)}`} alt={profile.username} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-[28px] font-semibold text-text-dark font-body">
                   {profile.username.slice(0, 2).toUpperCase()}
@@ -338,7 +338,7 @@ export default function UserProfilePage() {
                   onClick={() => setOpenPostIndex(i)}
                   className="aspect-square bg-ink-800 overflow-hidden cursor-pointer hover:brightness-110 transition-all"
                 >
-                  {p.mediaUrl && <img src={`${MEDIA_BASE}${p.mediaUrl}`} alt="" className="w-full h-full object-cover" />}
+                  {p.mediaUrl && <img src={`${mediaSrc(p.mediaUrl)}`} alt="" className="w-full h-full object-cover" />}
                 </motion.div>
               ))}
             </div>
@@ -364,7 +364,7 @@ export default function UserProfilePage() {
                 <Clapperboard size={14} className="absolute top-2 left-2 text-text-dark/80 z-10" />
                 {r.mediaUrl && (
                   <video
-                    src={`${MEDIA_BASE}${r.mediaUrl}#t=0.1`}
+                    src={`${mediaSrc(r.mediaUrl)}#t=0.1`}
                     muted
                     playsInline
                     preload="metadata"
@@ -445,7 +445,7 @@ export default function UserProfilePage() {
               <div className="relative w-[52%] shrink-0 bg-black flex items-center justify-center overflow-hidden">
                 {reels[openReelIndex].mediaUrl && (
                   <video
-                    src={`${MEDIA_BASE}${reels[openReelIndex].mediaUrl}`}
+                    src={`${mediaSrc(reels[openReelIndex].mediaUrl)}`}
                     autoPlay
                     loop
                     muted={reelMuted}
@@ -466,7 +466,7 @@ export default function UserProfilePage() {
                   <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
                     <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                       {profile.avatar ? (
-                        <img src={`${MEDIA_BASE}${profile.avatar}`} alt="" className="w-full h-full object-cover" />
+                        <img src={`${mediaSrc(profile.avatar)}`} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-[10px] font-semibold text-text-dark font-body">
                           {profile.username?.slice(0, 2).toUpperCase()}
@@ -594,7 +594,7 @@ export default function UserProfilePage() {
               <div className="relative w-[55%] shrink-0 bg-black flex items-center justify-center overflow-hidden">
                 {posts[openPostIndex].mediaUrl ? (
                   <img
-                    src={`${MEDIA_BASE}${posts[openPostIndex].mediaUrl}`}
+                    src={`${mediaSrc(posts[openPostIndex].mediaUrl)}`}
                     alt=""
                     className="w-full h-full object-contain"
                   />
@@ -608,7 +608,7 @@ export default function UserProfilePage() {
                   <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
                     <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                       {profile.avatar ? (
-                        <img src={`${MEDIA_BASE}${profile.avatar}`} alt="" className="w-full h-full object-cover" />
+                        <img src={`${mediaSrc(profile.avatar)}`} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-[10px] font-semibold text-text-dark font-body">
                           {profile.username?.slice(0, 2).toUpperCase()}

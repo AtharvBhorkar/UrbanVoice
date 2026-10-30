@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +9,6 @@ import {
 import { useEffect } from 'react';
 import * as api from '../../services/api';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 const RINGS = [
   'from-volt to-rose-400', 'from-signal to-volt', 'from-volt to-emerald-400',
   'from-volt to-signal', 'from-signal to-volt', 'from-emerald-400 to-volt',
@@ -265,7 +265,7 @@ export default function LeaderboardPage() {
           rank: u.rank,
           user: u.username,
           avatar: u.username.slice(0, 2).toUpperCase(),
-          avatarUrl: u.avatar ? `${MEDIA_BASE}${u.avatar}` : null,
+          avatarUrl: u.avatar ? `${mediaSrc(u.avatar)}` : null,
           ring: RINGS[i % RINGS.length],
           location: u.location || '',
           category: '',

@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -6,10 +7,9 @@ import {
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 function Avatar({ user, size = 'w-14 h-14' }) {
-  const avatarUrl = user?.avatar ? `${MEDIA_BASE}${user.avatar}` : null;
+  const avatarUrl = user?.avatar ? `${mediaSrc(user.avatar)}` : null;
   const label = user?.username?.slice(0, 2).toUpperCase() || '??';
   return (
     <div className={`${size} rounded-full bg-gradient-to-tr from-signal to-volt p-[2px] shrink-0`}>

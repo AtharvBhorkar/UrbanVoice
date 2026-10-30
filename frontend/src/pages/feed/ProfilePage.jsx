@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +13,6 @@ import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import FollowListModal from '../../components/FollowListModal';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say', 'Custom'];
 
@@ -120,7 +120,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user?.avatar) {
-      setProfileImage(`${MEDIA_BASE}${user.avatar}`);
+      setProfileImage(`${mediaSrc(user.avatar)}`);
     }
   }, [user?.avatar]);
 
@@ -269,7 +269,7 @@ export default function ProfilePage() {
       formData.append('avatar', file);
       const res = await api.updateProfile(formData);
       await refreshUser();
-      setProfileImage(`${MEDIA_BASE}${res.data.avatar}`);
+      setProfileImage(`${mediaSrc(res.data.avatar)}`);
       showToast('Profile photo updated.');
     } catch (err) {
       showToast('Could not update profile photo.');
@@ -605,7 +605,7 @@ export default function ProfilePage() {
                   className="aspect-square bg-ink-800 cursor-pointer hover:brightness-110 transition-all overflow-hidden"
                 >
                   {p.mediaUrl && (
-                    <img src={`${MEDIA_BASE}${p.mediaUrl}`} alt="" className="w-full h-full object-cover" />
+                    <img src={`${mediaSrc(p.mediaUrl)}`} alt="" className="w-full h-full object-cover" />
                   )}
                 </motion.div>
               ))}
@@ -631,7 +631,7 @@ export default function ProfilePage() {
               >
                 {r.mediaUrl && (
                   <video
-                    src={`${MEDIA_BASE}${r.mediaUrl}#t=0.1`}
+                    src={`${mediaSrc(r.mediaUrl)}#t=0.1`}
                     muted
                     playsInline
                     preload="metadata"
@@ -714,7 +714,7 @@ export default function ProfilePage() {
               <div className="relative w-[52%] shrink-0 bg-black flex items-center justify-center overflow-hidden">
                 {reels[openReelIndex].mediaUrl && (
                   <video
-                    src={`${MEDIA_BASE}${reels[openReelIndex].mediaUrl}`}
+                    src={`${mediaSrc(reels[openReelIndex].mediaUrl)}`}
                     autoPlay
                     loop
                     muted={reelMuted}
@@ -899,7 +899,7 @@ export default function ProfilePage() {
               <div className="relative w-[55%] shrink-0 bg-black flex items-center justify-center overflow-hidden">
                 {posts[openPostIndex].mediaUrl ? (
                   <img
-                    src={`${MEDIA_BASE}${posts[openPostIndex].mediaUrl}`}
+                    src={`${mediaSrc(posts[openPostIndex].mediaUrl)}`}
                     alt=""
                     className="w-full h-full object-contain"
                   />

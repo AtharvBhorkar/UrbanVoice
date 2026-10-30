@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -5,7 +6,6 @@ import {
 } from 'lucide-react';
 import * as api from '../../services/api';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 const RINGS = ['from-signal to-volt', 'from-volt to-rose-400', 'from-volt to-signal', 'from-emerald-400 to-volt', 'from-emerald-400 to-signal', 'from-signal to-rose-400', 'from-rose-400 to-signal'];
 
 const TYPE_META = {
@@ -32,7 +32,7 @@ function NotificationRow({ n, onRead, index }) {
   const meta = TYPE_META[n.type] || TYPE_META.status_update;
   const Icon = meta.icon;
   const ring = RINGS[index % RINGS.length];
-  const avatarUrl = n.sender?.avatar ? `${MEDIA_BASE}${n.sender.avatar}` : null;
+  const avatarUrl = n.sender?.avatar ? `${mediaSrc(n.sender.avatar)}` : null;
   const initials = n.sender?.username?.slice(0, 2).toUpperCase() || 'UV';
 
   return (

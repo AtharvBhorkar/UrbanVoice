@@ -1,9 +1,9 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search as SearchIcon } from 'lucide-react';
 import * as api from '../../services/api';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 const RINGS = ['from-signal to-volt', 'from-volt to-emerald-400', 'from-signal to-rose-400', 'from-volt to-signal', 'from-emerald-400 to-volt', 'from-rose-400 to-signal'];
 
 export default function SearchPage() {
@@ -62,7 +62,7 @@ export default function SearchPage() {
               <div className={`w-11 h-11 rounded-full bg-gradient-to-tr ${RINGS[i % RINGS.length]} p-[1.5px] shrink-0`}>
                 <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                   {u.avatar ? (
-                    <img src={`${MEDIA_BASE}${u.avatar}`} alt="" className="w-full h-full object-cover" />
+                    <img src={`${mediaSrc(u.avatar)}`} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-[11px] font-semibold text-text-dark font-body">
                       {u.username.slice(0, 2).toUpperCase()}

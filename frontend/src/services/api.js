@@ -73,6 +73,14 @@ export const getConversations = () => api.get('/messages');
 export const getConversation = (userId) => api.get(`/messages/${userId}`);
 export const sendMessage = (userId, text) => api.post(`/messages/${userId}`, { text });
 
-export const MEDIA_BASE_URL = API_BASE_URL.replace('/api', '');
+export const MEDIA_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, '');
+
+// Cloudinary ka full URL ho to waise hi, purani /uploads/... path ho to backend URL jodo
+export const mediaUrl = (path) => {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${MEDIA_BASE_URL}${path}`;
+};
+export const mediaSrc = mediaUrl;
 
 export default api;

@@ -3,6 +3,7 @@ const Category = require('../models/Category');
 const Notification = require('../models/Notification');
 const calculatePriorityScore = require('../utils/priorityScore');
 const checkAndUnlockBadges = require('../utils/checkBadges');
+const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
 
 const createComplaint = async (req, res) => {
   try {
@@ -13,7 +14,7 @@ const createComplaint = async (req, res) => {
     }
 
     const mediaType = req.file.mimetype.startsWith('video') ? 'video' : 'image';
-    const mediaUrl = `/uploads/${req.file.filename}`;
+    const mediaUrl = await uploadToCloudinary(req.file);
 
     const categoryDoc = await Category.findOne({ name: category });
     const department = categoryDoc?.department || 'General';

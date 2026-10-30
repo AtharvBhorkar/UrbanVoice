@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,7 +10,6 @@ import {
   Flag, EyeOff, Share2, Link2, Check, Crown, Shield, Rocket,
 } from 'lucide-react';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const RANK_MEDALS = {
   1: { Icon: Crown, disc: 'from-[#fff6da] via-[#f5d576] to-[#b8860b]' },
@@ -121,7 +121,7 @@ function StoryRing({ name, ring, rank, avatarUrl }) {
           <div className="w-full h-full rounded-full bg-ink-950 p-[2px]">
             <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
               {avatarUrl ? (
-                <img src={`${MEDIA_BASE}${avatarUrl}`} alt="" className="w-full h-full object-cover" />
+                <img src={`${mediaSrc(avatarUrl)}`} alt="" className="w-full h-full object-cover" />
               ) : (
                 <span className={`font-semibold text-text-dark font-body ${isCenter ? 'text-[13px]' : 'text-[11px]'}`}>
                   {name.slice(0, 2).toUpperCase()}
@@ -223,7 +223,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
     setMuted(videoRef.current.muted);
   };
 
-  const mediaUrl = item.mediaUrl ? `${MEDIA_BASE}${item.mediaUrl}` : null;
+  const mediaUrl = item.mediaUrl ? `${mediaSrc(item.mediaUrl)}` : null;
 
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900 overflow-hidden">
@@ -232,7 +232,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">
             <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
               {item.user?.avatar ? (
-                <img src={`${MEDIA_BASE}${item.user.avatar}`} alt="" className="w-full h-full object-cover" />
+                <img src={`${mediaSrc(item.user.avatar)}`} alt="" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-[10px] font-semibold text-text-dark font-body">
                   {item.user?.username?.slice(0, 2).toUpperCase()}
@@ -462,7 +462,7 @@ export default function HomeFeedPage() {
           <div className="flex items-center gap-3 mb-6">
             <div className="w-11 h-11 rounded-full bg-volt/20 border border-volt/40 flex items-center justify-center overflow-hidden">
               {user?.avatar ? (
-                <img src={`${MEDIA_BASE}${user.avatar}`} alt="" className="w-full h-full object-cover" />
+                <img src={`${mediaSrc(user.avatar)}`} alt="" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-volt text-[12px] font-bold font-body">{user?.username?.slice(0, 2).toUpperCase()}</span>
               )}
@@ -484,7 +484,7 @@ export default function HomeFeedPage() {
                   <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
                     <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                       {r.avatarUrl ? (
-                        <img src={`${MEDIA_BASE}${r.avatarUrl}`} alt="" className="w-full h-full object-cover" />
+                        <img src={`${mediaSrc(r.avatarUrl)}`} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-[10px] font-semibold text-text-dark font-body">{r.avatar}</span>
                       )}

@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -6,7 +7,6 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import * as api from '../../services/api';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const STATUS_TABS = ['All', 'Pending', 'In Progress', 'Resolved', 'Rejected'];
 
@@ -29,7 +29,7 @@ function StatusBadge({ status }) {
 }
 
 function ComplaintCard({ complaint, index }) {
-  const mediaUrl = complaint.mediaUrl ? `${MEDIA_BASE}${complaint.mediaUrl}` : null;
+  const mediaUrl = complaint.mediaUrl ? `${mediaSrc(complaint.mediaUrl)}` : null;
   const slaBreached =
     complaint.status !== 'Resolved' &&
     complaint.status !== 'Rejected' &&

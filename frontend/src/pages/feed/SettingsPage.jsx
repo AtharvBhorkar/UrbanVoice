@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -7,7 +8,6 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import * as api from '../../services/api';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const TABS = [
   { id: 'account', label: 'Account', icon: User },
@@ -80,7 +80,7 @@ export default function SettingsPage() {
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(
-    user?.avatar ? `${MEDIA_BASE}${user.avatar}` : null
+    user?.avatar ? `${mediaSrc(user.avatar)}` : null
   );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);

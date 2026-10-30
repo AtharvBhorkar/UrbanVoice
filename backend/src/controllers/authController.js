@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
 
 const registerUser = async (req, res) => {
   try {
@@ -182,7 +183,7 @@ const updateProfile = async (req, res) => {
       } catch {
       }
     }
-    if (req.file) user.avatar = `/uploads/${req.file.filename}`;
+    if (req.file) user.avatar = await uploadToCloudinary(req.file);
 
     await user.save();
 

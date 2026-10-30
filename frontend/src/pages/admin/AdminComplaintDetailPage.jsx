@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft, ImageOff, CheckCircle2 } from 'lucide-react';
@@ -12,7 +13,6 @@ const STATUS_BADGE = {
   Rejected: 'text-text-dark-muted bg-ink-700',
 };
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 export default function AdminComplaintDetailPage() {
   const { id } = useParams();
@@ -87,9 +87,9 @@ export default function AdminComplaintDetailPage() {
 
   const mediaUrl = complaint.mediaUrl?.startsWith('http')
     ? complaint.mediaUrl
-    : `${MEDIA_BASE}${complaint.mediaUrl}`;
+    : `${mediaSrc(complaint.mediaUrl)}`;
   const resolutionImageUrl = complaint.resolutionImage
-    ? (complaint.resolutionImage.startsWith('http') ? complaint.resolutionImage : `${MEDIA_BASE}${complaint.resolutionImage}`)
+    ? (complaint.resolutionImage.startsWith('http') ? complaint.resolutionImage : `${mediaSrc(complaint.resolutionImage)}`)
     : null;
 
   return (

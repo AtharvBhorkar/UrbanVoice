@@ -1,26 +1,29 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const { v2: cloudinary } = require('cloudinary');
 
-const uploadDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const ALLOWED_EXT = ['.jpeg', '.jpg', '.png', '.gif', '.mp4', '.mov', '.avi', '.webm'];
+const ALLOWED_MIME = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'video/mp4',
+  'video/quicktime', // .mov
+  'video/x-msvideo', // .avi
+  'video/avi',
+  'video/msvideo',
+  'video/webm',
+];
+
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|mp4|mov|avi|webm/;
-  const extValid = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimeValid = allowedTypes.test(file.mimetype);
+  const extValid = ALLOWED_EXT.includes(path.extname(file.originalname).toLowerCase());
+  const mimeValid = ALLOWED_MIME.includes(file.mimetype);
 
   if (extValid && mimeValid) {
     cb(null, true);
@@ -29,10 +32,24 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// File memory me aati hai, phir seedha Cloudinary pe jaati hai (disk pe kuch save nahi hota)
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
 });
 
+const uploadToCloudinary = (file) =>
+  new Promise((resolve, reject) => {
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      return reject(new Error('Cloudinary env variables are missing'));
+    }
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'urbanvoice', resource_type: 'auto' },
+      (error, result) => (error ? reject(error) : resolve(result.secure_url))
+    );
+    stream.end(file.buffer);
+  });
+
 module.exports = upload;
+module.exports.uploadToCloudinary = uploadToCloudinary;

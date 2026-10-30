@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Send, Volume2, VolumeX, Play, MapPin } from 'lucide-react';
@@ -6,7 +7,6 @@ import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import CommentsModal from '../../components/CommentsModal';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBump, onShare }) {
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
       setSharing(false);
     }
   };
-  const videoUrl = item.mediaUrl ? `${MEDIA_BASE}${item.mediaUrl}` : null;
+  const videoUrl = item.mediaUrl ? `${mediaSrc(item.mediaUrl)}` : null;
 
   useEffect(() => {
     api.getComments(item._id)
@@ -115,7 +115,7 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">
               <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                 {item.user?.avatar ? (
-                  <img src={`${MEDIA_BASE}${item.user.avatar}`} alt="" className="w-full h-full object-cover" />
+                  <img src={`${mediaSrc(item.user.avatar)}`} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-[10px] font-semibold font-body">
                     {item.user?.username?.slice(0, 2).toUpperCase()}

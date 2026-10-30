@@ -1,3 +1,4 @@
+import { mediaSrc } from '../../services/api';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, AlertTriangle, ImageOff } from 'lucide-react';
@@ -130,7 +131,7 @@ export default function AdminComplaintsListPage() {
                   <td className="px-5 py-3">
                     {c.mediaType === 'image' && c.mediaUrl ? (
                       <img
-                        src={c.mediaUrl.startsWith('http') ? c.mediaUrl : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${c.mediaUrl}`}
+                        src={c.mediaUrl.startsWith('http') ? c.mediaUrl : `${mediaSrc(c.mediaUrl)}`}
                         alt=""
                         className="w-10 h-10 rounded-lg object-cover"
                       />

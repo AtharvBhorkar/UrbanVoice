@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import * as api from '../services/api';
 
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+import { mediaUrl } from '../services/api';
 
 export default function FollowListModal({ open, onClose, username, type }) {
   const navigate = useNavigate();
@@ -68,7 +68,7 @@ export default function FollowListModal({ open, onClose, username, type }) {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px] shrink-0">
                       <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
                         {u.avatar ? (
-                          <img src={`${MEDIA_BASE}${u.avatar}`} alt="" className="w-full h-full object-cover" />
+                          <img src={mediaUrl(u.avatar)} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-[10px] font-semibold text-text-dark font-body">
                             {u.username.slice(0, 2).toUpperCase()}
