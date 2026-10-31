@@ -90,6 +90,8 @@ export default function MessagesPage() {
       loadConversations();
     } catch (err) {
       console.error('Failed to send message', err);
+      setDraft(text);
+      alert(err.response?.data?.message || 'Message send nahi hua');
     }
   };
 

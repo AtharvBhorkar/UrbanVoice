@@ -79,6 +79,7 @@ const getConversations = async (req, res) => {
 
     const seen = new Map();
     for (const msg of messages) {
+      if (!msg.sender || !msg.recipient) continue;
       const other =
         msg.sender._id.toString() === req.user._id.toString() ? msg.recipient : msg.sender;
       const key = other._id.toString();
