@@ -5,6 +5,17 @@ const checkAndUnlockBadges = require('../utils/checkBadges');
 const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
 const refreshPriority = require('../utils/refreshPriority');
 
+// Anonymous post me user ki identity hata do (owner aur admin ko chhodke)
+const maskAnonymous = (doc, viewerId, isAdmin = false) => {
+  const obj = doc.toObject ? doc.toObject() : doc;
+  const ownerId = String(obj.user?._id || obj.user || '');
+  if (obj.isAnonymous && !isAdmin && String(viewerId || '') !== ownerId) {
+    obj.user = { _id: 'anonymous', username: 'Anonymous', avatar: '', fullName: 'Anonymous' };
+    obj.statusHistory = (obj.statusHistory || []).map(({ changedBy, ...rest }) => rest);
+  }
+  return obj;
+};
+
 const createComplaint = async (req, res) => {
   try {
     const { type, caption, category, location, lat, lng, isAnonymous, urgency } = req.body;
@@ -64,7 +75,7 @@ const getComplaints = async (req, res) => {
       .populate('user', 'username avatar fullName')
       .sort({ createdAt: -1 });
 
-    res.status(200).json(complaints);
+    res.status(200).json(complaints.map((c) => maskAnonymous(c, req.user?._id)));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -81,7 +92,7 @@ const getComplaintById = async (req, res) => {
       return res.status(404).json({ message: 'Not found' });
     }
 
-    res.status(200).json(complaint);
+    res.status(200).json(maskAnonymous(complaint, req.user?._id));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -105,6 +116,9 @@ const trackComplaint = async (req, res) => {
 const getComplaintsByUser = async (req, res) => {
   try {
     const filter = { user: req.params.userId };
+    if (String(req.user?._id || '') !== String(req.params.userId)) {
+      filter.isAnonymous = { $ne: true };
+    }
     if (req.query.type) filter.type = req.query.type;
 
     const complaints = await Complaint.find(filter)

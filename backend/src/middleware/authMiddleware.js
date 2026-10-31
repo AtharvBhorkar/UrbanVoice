@@ -27,4 +27,18 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+// Token ho aur valid ho to req.user set karta hai, warna chupchaap aage badh jaata hai (kabhi 401 nahi)
+const optionalAuth = async (req, res, next) => {
+  try {
+    const header = req.headers.authorization;
+    if (header && header.startsWith('Bearer')) {
+      const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+    }
+  } catch (error) {
+    // invalid ya expired token: guest ki tarah treat karo
+  }
+  next();
+};
+
+module.exports = { protect, optionalAuth };

@@ -228,7 +228,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3">
-        <button onClick={() => navigate(`/profile/${item.user?.username}`)} className="flex items-center gap-3 text-left">
+        <button onClick={() => item.isAnonymous ? null : navigate(`/profile/${item.user?.username}`)} className="flex items-center gap-3 text-left">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">
             <div className="w-full h-full rounded-full bg-ink-800 flex items-center justify-center overflow-hidden">
               {item.user?.avatar ? (

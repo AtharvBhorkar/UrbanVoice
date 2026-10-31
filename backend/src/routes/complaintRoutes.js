@@ -10,14 +10,14 @@ const {
   toggleSave,
   submitFeedback,
 } = require('../controllers/complaintController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, optionalAuth } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
 router.post('/', protect, upload.single('media'), createComplaint);
-router.get('/', getComplaints);
-router.get('/user/:userId', getComplaintsByUser);
+router.get('/', optionalAuth, getComplaints);
+router.get('/user/:userId', optionalAuth, getComplaintsByUser);
 router.get('/track/:ticketId', trackComplaint);
-router.get('/:id', getComplaintById);
+router.get('/:id', optionalAuth, getComplaintById);
 router.put('/:id/like', protect, toggleLike);
 router.put('/:id/save', protect, toggleSave);
 router.put('/:id/feedback', protect, submitFeedback);
