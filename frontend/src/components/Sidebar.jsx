@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import * as api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rss, PlaySquare, Crown, CirclePlus,
+  Rss, PlaySquare, Crown, CirclePlus, MapPin,
   ScanSearch, MessagesSquare, BellRing, User, Award,
   Settings, HelpCircle, LogOut, Menu, ImagePlus, Clapperboard, ClipboardList,} from 'lucide-react';
 import logo from '../assets/logo.png';
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { icon: MessagesSquare, label: 'Messages', to: '/messages' },
   { icon: CirclePlus, label: 'Create', to: '/create' },
   { icon: Crown, label: 'Leaderboard', to: '/leaderboard' },
+  { icon: MapPin, label: 'Map', to: '/explore' },
 ];
 
 const PROFILE_MENU = [

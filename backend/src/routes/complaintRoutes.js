@@ -4,6 +4,7 @@ const {
   createComplaint,
   getComplaints,
   getComplaintById,
+  trackComplaint,
   getComplaintsByUser,
   toggleLike,
   toggleSave,
@@ -15,6 +16,7 @@ const upload = require('../middleware/uploadMiddleware');
 router.post('/', protect, upload.single('media'), createComplaint);
 router.get('/', getComplaints);
 router.get('/user/:userId', getComplaintsByUser);
+router.get('/track/:ticketId', trackComplaint);
 router.get('/:id', getComplaintById);
 router.put('/:id/like', protect, toggleLike);
 router.put('/:id/save', protect, toggleSave);

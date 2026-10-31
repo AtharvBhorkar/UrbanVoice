@@ -1,3 +1,5 @@
+import { pinFor } from '../../data/locations';
+import LocationPickerModal from '../../components/LocationPickerModal';
 import { mediaSrc } from '../../services/api';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +34,8 @@ export default function CreateReelPage() {
   const [locationOpen, setLocationOpen] = useState(false);
   const [locationQuery, setLocationQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [exactPin, setExactPin] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [shareToFeed, setShareToFeed] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [duration, setDuration] = useState(0);
@@ -88,6 +92,11 @@ export default function CreateReelPage() {
       formData.append('caption', caption);
       formData.append('category', selectedCategory);
       formData.append('location', selectedLocation || '');
+      const pin = pinFor(selectedLocation);
+      if (pin) {
+        formData.append('lat', pin.lat);
+        formData.append('lng', pin.lng);
+      }
       formData.append('media', file);
 
       await api.createComplaint(formData);
@@ -120,6 +129,17 @@ export default function CreateReelPage() {
 
   return (
     <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 flex items-center justify-center px-6 py-10">
+      {pickerOpen && (
+        <LocationPickerModal
+          initial={exactPin ? { pin: exactPin, text: selectedLocation } : null}
+          onClose={() => setPickerOpen(false)}
+          onConfirm={(text, pin) => {
+            setSelectedLocation(text);
+            setExactPin(pin);
+            setPickerOpen(false);
+          }}
+        />
+      )}
       <div className={`w-full rounded-2xl bg-ink-900 border border-ink-700 overflow-hidden shadow-2xl transition-all duration-200 ${step === 'details' ? 'max-w-[1000px]' : 'max-w-[420px]'}`}>
 
         {step === 'trim' && file && previewUrl ? (

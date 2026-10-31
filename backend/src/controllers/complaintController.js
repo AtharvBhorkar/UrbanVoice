@@ -31,7 +31,11 @@ const createComplaint = async (req, res) => {
       category,
       location,
       department,
-      coordinates: lat && lng ? { lat, lng } : undefined,
+      coordinates:
+        lat !== undefined && lng !== undefined && lat !== '' && lng !== '' &&
+        Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))
+          ? { lat: Number(lat), lng: Number(lng) }
+          : undefined,
       isAnonymous: isAnonymous === 'true' || isAnonymous === true,
       urgency: ['Low', 'Medium', 'High'].includes(urgency) ? urgency : 'Medium',
       expectedResolutionDate,
@@ -77,6 +81,21 @@ const getComplaintById = async (req, res) => {
       return res.status(404).json({ message: 'Not found' });
     }
 
+    res.status(200).json(complaint);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const trackComplaint = async (req, res) => {
+  try {
+    const ticketId = String(req.params.ticketId || '').trim().toUpperCase();
+    const complaint = await Complaint.findOne({ ticketId }).select(
+      'ticketId status category department location caption createdAt expectedResolutionDate resolutionNote resolutionImage statusHistory.status statusHistory.note statusHistory.date'
+    );
+    if (!complaint) {
+      return res.status(404).json({ message: 'Not found' });
+    }
     res.status(200).json(complaint);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -194,6 +213,7 @@ module.exports = {
   createComplaint,
   getComplaints,
   getComplaintById,
+  trackComplaint,
   getComplaintsByUser,
   toggleLike,
   toggleSave,

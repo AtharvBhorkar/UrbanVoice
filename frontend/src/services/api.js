@@ -41,6 +41,8 @@ export const getComplaints = (type) =>
 export const getComplaintById = (id) => api.get(`/complaints/${id}`);
 export const getComplaintsByUser = (userId, type) =>
   api.get(`/complaints/user/${userId}`, { params: type ? { type } : {} });
+export const trackComplaint = (ticketId) =>
+  api.get(`/complaints/track/${encodeURIComponent(ticketId)}`);
 export const toggleLike = (id) => api.put(`/complaints/${id}/like`);
 export const toggleSave = (id) => api.put(`/complaints/${id}/save`);
 

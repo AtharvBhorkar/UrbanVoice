@@ -1,3 +1,5 @@
+import { pinFor } from '../../data/locations';
+import LocationPickerModal from '../../components/LocationPickerModal';
 import { mediaSrc } from '../../services/api';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -47,6 +49,8 @@ export default function CreatePostPage() {
   const [locationOpen, setLocationOpen] = useState(false);
   const [locationQuery, setLocationQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [exactPin, setExactPin] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const inputRef = useRef(null);
 
   const ASPECT_RATIOS = [
@@ -73,6 +77,11 @@ export default function CreatePostPage() {
       formData.append('caption', caption);
       formData.append('category', selectedCategory);
       formData.append('location', selectedLocation || '');
+      const pin = selectedLocation ? (exactPin || pinFor(selectedLocation)) : null;
+      if (pin) {
+        formData.append('lat', pin.lat);
+        formData.append('lng', pin.lng);
+      }
       formData.append('media', file);
 
       await api.createComplaint(formData);
@@ -103,6 +112,17 @@ export default function CreatePostPage() {
 
   return (
     <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 flex items-center justify-center px-6">
+      {pickerOpen && (
+        <LocationPickerModal
+          initial={exactPin ? { pin: exactPin, text: selectedLocation } : null}
+          onClose={() => setPickerOpen(false)}
+          onConfirm={(text, pin) => {
+            setSelectedLocation(text);
+            setExactPin(pin);
+            setPickerOpen(false);
+          }}
+        />
+      )}
       <div className={`w-full rounded-2xl bg-ink-900 border border-ink-700 overflow-hidden shadow-2xl transition-all duration-200 ${step === 'details' ? 'max-w-[1000px]' : 'max-w-[550px]'}`}>
         {step === 'crop' && file && previewUrl ? (
           <>
@@ -238,7 +258,7 @@ export default function CreatePostPage() {
                         <span className="text-[13.5px] font-body text-text-dark truncate">{selectedLocation}</span>
                       </div>
                       <button
-                        onClick={() => { setSelectedLocation(null); setLocationQuery(''); }}
+                        onClick={() => { setSelectedLocation(null); setExactPin(null); setLocationQuery(''); }}
                         aria-label="Remove location"
                       >
                         <X size={15} className="text-text-dark-muted hover:text-text-dark transition-colors" />
@@ -290,7 +310,7 @@ export default function CreatePostPage() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => setLocationOpen(true)}
+                      onClick={() => setPickerOpen(true)}
                       className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-ink-800/50 transition-colors"
                     >
                       <span className="text-[13.5px] font-body text-text-dark-muted">Add location</span>

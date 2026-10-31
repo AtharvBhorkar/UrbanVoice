@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search, Loader2, MapPin, Calendar, AlertCircle, Clock,
   CheckCircle2, XCircle, RefreshCcw, Ticket,
 } from 'lucide-react';
-import { getComplaintById } from '../../services/api.js';
+import { trackComplaint } from '../../services/api.js';
 
 const STATUS_META = {
   Pending: { color: 'text-amber-400', bg: 'bg-amber-400/10', icon: Clock },
@@ -18,6 +18,21 @@ export default function TrackComplaintPage() {
   const [error, setError] = useState('');
   const [complaint, setComplaint] = useState(null);
 
+  // Live tracking: complaint khula ho to har 10s me status dobara fetch
+  useEffect(() => {
+    if (!complaint?.ticketId) return undefined;
+    const id = setInterval(async () => {
+      if (document.hidden) return;
+      try {
+        const { data } = await trackComplaint(complaint.ticketId);
+        setComplaint(data);
+      } catch {
+        /* silent */
+      }
+    }, 10000);
+    return () => clearInterval(id);
+  }, [complaint?.ticketId]);
+
   const handleSearch = async (e) => {
     e.preventDefault();
     const query = ticketId.trim();
@@ -28,7 +43,7 @@ export default function TrackComplaintPage() {
     setComplaint(null);
 
     try {
-      const { data } = await getComplaintById(query);
+      const { data } = await trackComplaint(query);
       setComplaint(data);
     } catch (err) {
       setError(
@@ -95,6 +110,10 @@ export default function TrackComplaintPage() {
                 </p>
                 <p className="font-display font-bold text-[18px] text-[#f5f3cd]">
                   {complaint.ticketId || complaint._id}
+                  <span className="ml-3 inline-flex items-center gap-1.5 font-body text-[11px] font-normal text-[#f5f3cd]/70">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Live
+                  </span>
                 </p>
               </div>
               {meta && (

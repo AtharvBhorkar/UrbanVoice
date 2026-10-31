@@ -28,6 +28,7 @@ import SearchPage from './pages/feed/SearchPage.jsx';
 import MessagesPage from './pages/feed/MessagesPage.jsx';
 import HelpFAQ from './pages/feed/HelpFAQ.jsx';
 import MyComplaintsPage from './pages/feed/MyComplaintsPage.jsx';
+import MapPage from './pages/feed/MapPage.jsx';
 import LandingPage from './pages/public/LandingPage.jsx';
 import AboutPage from './pages/public/AboutPage.jsx';
 import CommunityImpactPage from './pages/extra/CommunityImpactPage.jsx';
@@ -110,7 +111,7 @@ export default function App() {
           <Route path="/reels" element={<ReelsPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/explore" element={<AppPlaceholder title="Explore" />} />
+          <Route path="/explore" element={<MapPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/create" element={<CreatePostPage />} />
           <Route path="/create-reel" element={<CreateReelPage />} />
