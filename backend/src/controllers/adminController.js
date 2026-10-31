@@ -17,8 +17,12 @@ const getAllComplaints = async (req, res) => {
       .populate('user', 'username avatar fullName');
 
     await refreshMany(complaints);
+    const isClosed = (c) => c.status === 'Resolved' || c.status === 'Rejected';
     complaints.sort(
-      (a, b) => b.priorityScore - a.priorityScore || b.createdAt - a.createdAt
+      (a, b) =>
+        Number(isClosed(a)) - Number(isClosed(b)) ||
+        b.priorityScore - a.priorityScore ||
+        b.createdAt - a.createdAt
     );
 
     const withSlaFlag = complaints.map((c) => {
