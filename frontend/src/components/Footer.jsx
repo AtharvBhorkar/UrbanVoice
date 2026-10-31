@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Instagram, Twitter, Facebook, Youtube } from 'lucide-react';
+import { Instagram, Youtube, Linkedin, Github } from 'lucide-react';
 import logo from '../assets/logo.png';
 
 const FOOTER_LINKS = {
@@ -27,10 +27,10 @@ const FOOTER_LINKS = {
 };
 
 const SOCIALS = [
-  { icon: Instagram, href: 'https://instagram.com' },
-  { icon: Twitter, href: 'https://twitter.com' },
-  { icon: Facebook, href: 'https://facebook.com' },
-  { icon: Youtube, href: 'https://youtube.com' },
+  { icon: Instagram, href: 'https://www.instagram.com/atharv__155/' },
+  { icon: Youtube, href: 'https://youtu.be/zfVdGn4jrpA' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/in/atharv-bhorkar-45524122a/' },
+  { icon: Github, href: 'https://github.com/AtharvBhorkar' },
 ];
 
 export default function Footer() {
