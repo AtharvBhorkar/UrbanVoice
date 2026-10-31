@@ -1,13 +1,13 @@
 const Complaint = require('../models/Complaint');
 const Category = require('../models/Category');
 const Notification = require('../models/Notification');
-const calculatePriorityScore = require('../utils/priorityScore');
 const checkAndUnlockBadges = require('../utils/checkBadges');
 const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
+const refreshPriority = require('../utils/refreshPriority');
 
 const createComplaint = async (req, res) => {
   try {
-    const { type, caption, category, location, lat, lng, isAnonymous } = req.body;
+    const { type, caption, category, location, lat, lng, isAnonymous, urgency } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ message: 'Media file is required' });
@@ -33,22 +33,11 @@ const createComplaint = async (req, res) => {
       department,
       coordinates: lat && lng ? { lat, lng } : undefined,
       isAnonymous: isAnonymous === 'true' || isAnonymous === true,
+      urgency: ['Low', 'Medium', 'High'].includes(urgency) ? urgency : 'Medium',
       expectedResolutionDate,
       statusHistory: [{ status: 'Pending', changedBy: req.user._id, note: 'Complaint filed' }],
     });
-    const repeatCountInArea = location
-      ? await Complaint.countDocuments({
-          _id: { $ne: complaint._id },
-          category,
-          location,
-        })
-      : 0;
-
-    complaint.priorityScore = calculatePriorityScore(
-      complaint,
-      repeatCountInArea,
-      categoryDoc?.priorityWeight
-    );
+    await refreshPriority(complaint);
     await complaint.save();
 
     await checkAndUnlockBadges(req.user);
@@ -139,6 +128,7 @@ const toggleLike = async (req, res) => {
       }
     }
 
+    await refreshPriority(complaint);
     await complaint.save();
     res.status(200).json({ likes: complaint.likes.length, liked: !alreadyLiked });
   } catch (error) {

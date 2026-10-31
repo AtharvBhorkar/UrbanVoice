@@ -1,5 +1,6 @@
 const Complaint = require('../models/Complaint');
 const User = require('../models/User');
+const { refreshMany } = require('../utils/refreshPriority');
 
 const getAllComplaints = async (req, res) => {
   try {
@@ -13,8 +14,12 @@ const getAllComplaints = async (req, res) => {
     }
 
     const complaints = await Complaint.find(filter)
-      .populate('user', 'username avatar fullName')
-      .sort({ priorityScore: -1, createdAt: -1 });
+      .populate('user', 'username avatar fullName');
+
+    await refreshMany(complaints);
+    complaints.sort(
+      (a, b) => b.priorityScore - a.priorityScore || b.createdAt - a.createdAt
+    );
 
     const withSlaFlag = complaints.map((c) => {
       const obj = c.toObject();

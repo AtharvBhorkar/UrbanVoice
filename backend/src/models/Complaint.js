@@ -58,6 +58,11 @@ const complaintSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    urgency: {
+      type: String,
+      enum: ['Low', 'Medium', 'High'],
+      default: 'Medium',
+    },
     expectedResolutionDate: {
       type: Date,
     },
