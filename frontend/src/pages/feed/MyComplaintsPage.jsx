@@ -56,7 +56,7 @@ function ComplaintCard({ complaint, index }) {
       <div className="flex-1 p-4 flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-body text-text-dark-muted">#{complaint.ticketId}</p>
+            <p className="text-[11px] font-body text-text-dark-muted">#{complaint.ticketId}{complaint.isAnonymous ? ' · Anonymous' : ''}</p>
             <p className="text-[14px] font-body text-text-dark line-clamp-2 mt-0.5">
               {complaint.caption || 'No description'}
             </p>
@@ -73,7 +73,7 @@ function ComplaintCard({ complaint, index }) {
               <MapPin size={12} /> {complaint.location}
             </span>
           )}
-          <span>Priority: {complaint.priorityScore}</span>
+          <span>Urgency: {complaint.urgency || 'Medium'} · Priority: {complaint.priorityScore}</span>
         </div>
 
         {slaBreached && (
@@ -140,7 +140,7 @@ export default function MyComplaintsPage() {
   }, [complaints]);
 
   return (
-    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 px-8 py-8">
+    <div className="min-h-screen ml-0 md:ml-[76px] bg-ink-950 px-4 md:px-8 pt-8 pb-24 md:pb-8">
       <div className="max-w-[900px] mx-auto">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
