@@ -369,7 +369,7 @@ export default function CreatePostPage() {
                   View
                 </button>
                 <button
-                  onClick={() => { setFile(null); setPreviewUrl(null); setStep('select'); setCaption(''); setSelectedLocation(null); }}
+                  onClick={() => { setFile(null); setPreviewUrl(null); setStep('select'); setCaption(''); setSelectedLocation(null); setExactPin(null); setIsAnonymous(false); setUrgency('Medium'); }}
                   className="text-[14px] font-semibold font-body text-blue-500 hover:text-blue-400 transition-colors"
                 >
                   Done

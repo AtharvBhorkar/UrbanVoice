@@ -412,13 +412,13 @@ export default function ProfilePage() {
     }
   }, [profileImage, profileBio, profileGender, profileWebsite, profileWebsiteLabel, posts, reels]);
 
-  const realBadgeCount = user?.badges?.length || 0;
+  const hasPostedAny = posts.length > 0 || reels.length > 0;
   const earnedBadges = useMemo(() => {
-    const allTiers = [...BADGES].reverse();
-    const unlocked = allTiers.slice(0, realBadgeCount);
-    if (realBadgeCount >= BADGES.length + 1 && isUnlocked(SUPREME)) unlocked.unshift(SUPREME);
+    const pts = user?.points || 0;
+    const unlocked = BADGES.filter((b) => isUnlocked(b, pts, hasPostedAny)).reverse();
+    if (pts >= SUPREME.points) unlocked.unshift(SUPREME);
     return unlocked;
-  }, [realBadgeCount]);
+  }, [user?.points, hasPostedAny]);
 
   const visibleBadges = earnedBadges.slice(0, 5);
 
