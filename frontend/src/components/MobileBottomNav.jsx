@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Search, PlusSquare, Film, User } from 'lucide-react';
+import { Home, Search, PlusSquare, Film, User, MapPin } from 'lucide-react';
 
 export default function MobileBottomNav() {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ export default function MobileBottomNav() {
     { icon: Film, to: '/reels', label: 'Voice Reels' },
     { icon: PlusSquare, to: '/create', label: 'Create' },
     { icon: Search, to: '/search', label: 'Search' },
+    { icon: MapPin, to: '/explore', label: 'Map' },
     { icon: User, to: '/profile', label: 'Profile' },
   ];
 

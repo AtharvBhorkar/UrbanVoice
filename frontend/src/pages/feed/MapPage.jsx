@@ -71,7 +71,7 @@ export default function MapPage() {
       </div>
 
       <div className="px-4 md:px-8">
-        <div className="rounded-2xl overflow-hidden border border-ink-700 h-[calc(100vh-210px)] min-h-[360px]">
+        <div className="rounded-2xl overflow-hidden border border-ink-700 isolate relative z-0 h-[calc(100dvh-290px)] md:h-[calc(100vh-210px)] min-h-[320px]">
           <MapContainer center={NAGPUR} zoom={12} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
