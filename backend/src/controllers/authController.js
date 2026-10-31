@@ -129,6 +129,8 @@ const getMe = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
+  // TEMP: bina OTP ke reset account takeover karta hai. OTP flow aane tak band.
+  return res.status(503).json({ message: 'Password reset is temporarily unavailable. Please contact support.' });
   try {
     const { email, newPassword } = req.body;
 
