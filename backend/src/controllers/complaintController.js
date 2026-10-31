@@ -31,7 +31,7 @@ const createComplaint = async (req, res) => {
     const department = categoryDoc?.department || 'General';
 
     const expectedResolutionDate = new Date();
-    expectedResolutionDate.setDate(expectedResolutionDate.getDate() + 7);
+    expectedResolutionDate.setDate(expectedResolutionDate.getDate() + 30);
 
     const complaint = await Complaint.create({
       user: req.user._id,

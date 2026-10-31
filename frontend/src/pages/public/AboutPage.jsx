@@ -414,7 +414,7 @@ export default function AboutPage() {
             { icon: CheckCircle2, num: '10s', label: 'Live status refresh' },
             { icon: Users, num: 'Map', label: 'Exact location pins' },
             { icon: MapPin, num: 'Nagpur', label: 'Pilot city' },
-            { icon: TrendingUp, num: '7 days', label: 'Expected resolution window' },
+            { icon: TrendingUp, num: '30 days', label: 'Expected resolution window' },
           ].map((s, i) => (
             <motion.div
               key={i}

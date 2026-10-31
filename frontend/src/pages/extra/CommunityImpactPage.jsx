@@ -133,7 +133,7 @@ const CITY_STATS = [
   { icon: CheckCircle2, num: '10s', label: 'Live status refresh' },
   { icon: Users, num: 'Map', label: 'Exact location pins' },
   { icon: MapPin, num: 'Nagpur', label: 'Pilot city' },
-  { icon: Clock, num: '7 days', label: 'Expected resolution window' },
+  { icon: Clock, num: '30 days', label: 'Expected resolution window' },
 ];
 
 const WARD_BREAKDOWN = [
