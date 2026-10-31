@@ -96,7 +96,7 @@ export default function CreateReelPage() {
       formData.append('location', selectedLocation || '');
       formData.append('urgency', urgency);
       formData.append('isAnonymous', isAnonymous);
-      const pin = pinFor(selectedLocation);
+      const pin = selectedLocation ? (exactPin || pinFor(selectedLocation)) : null;
       if (pin) {
         formData.append('lat', pin.lat);
         formData.append('lng', pin.lng);
@@ -252,7 +252,7 @@ export default function CreateReelPage() {
                         <span className="text-[13.5px] font-body text-text-dark truncate">{selectedLocation}</span>
                       </div>
                       <button
-                        onClick={() => { setSelectedLocation(null); setLocationQuery(''); }}
+                        onClick={() => { setSelectedLocation(null); setExactPin(null); setLocationQuery(''); }}
                         aria-label="Remove location"
                       >
                         <X size={15} className="text-text-dark-muted hover:text-text-dark transition-colors" />
