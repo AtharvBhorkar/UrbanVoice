@@ -101,7 +101,7 @@ export default function MapPage() {
                     <strong>{c.ticketId}</strong>
                     <div>{c.category} · {c.status}</div>
                     {c.location && <div style={{ fontSize: 12, opacity: 0.7 }}>{c.location}</div>}
-                    <div style={{ fontSize: 12, marginTop: 4 }}>{c.likes?.length || 0} backed</div>
+                    <div style={{ fontSize: 12, marginTop: 4 }}>{c.likes?.length || 0} supporters</div>
                   </div>
                 </Popup>
               </CircleMarker>
