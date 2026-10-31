@@ -109,7 +109,7 @@ function ReelItem({ item, currentUserId, onToggleLike, onOpenComments, commentBu
 
         <div className="absolute left-4 right-16 bottom-24 sm:bottom-8 text-text-dark z-10">
           <button
-            onClick={() => navigate(`/profile/${item.user?.username}`)}
+            onClick={() => item.isAnonymous ? null : navigate(`/profile/${item.user?.username}`)}
             className="flex items-center gap-2 mb-2"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-signal to-volt p-[1.5px]">

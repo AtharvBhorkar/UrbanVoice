@@ -36,6 +36,8 @@ export default function CreateReelPage() {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [exactPin, setExactPin] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [urgency, setUrgency] = useState('Medium');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [shareToFeed, setShareToFeed] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [duration, setDuration] = useState(0);
@@ -92,6 +94,8 @@ export default function CreateReelPage() {
       formData.append('caption', caption);
       formData.append('category', selectedCategory);
       formData.append('location', selectedLocation || '');
+      formData.append('urgency', urgency);
+      formData.append('isAnonymous', isAnonymous);
       const pin = pinFor(selectedLocation);
       if (pin) {
         formData.append('lat', pin.lat);
@@ -309,7 +313,21 @@ export default function CreateReelPage() {
                   )}
 
                   <div className="px-4 py-3.5 border-t border-ink-800">
-                    <label className="text-[12px] font-body text-text-dark-muted block mb-1.5">Category</label>
+                    <label className="text-[12px] font-body text-text-dark-muted block mb-1.5">Urgency</label>
+<select
+  value={urgency}
+  onChange={(e) => setUrgency(e.target.value)}
+  className="w-full bg-ink-800 border border-ink-700 rounded-lg px-3 py-2 text-[13.5px] font-body text-text-dark focus:outline-none focus:border-signal mb-3"
+>
+  <option value="Low">Low</option>
+  <option value="Medium">Medium</option>
+  <option value="High">High</option>
+</select>
+<label className="flex items-center gap-2 text-[13px] font-body text-text-dark mb-3 cursor-pointer">
+  <input type="checkbox" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} />
+  Post anonymously
+</label>
+<label className="text-[12px] font-body text-text-dark-muted block mb-1.5">Category</label>
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}

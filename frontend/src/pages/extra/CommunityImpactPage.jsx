@@ -130,10 +130,10 @@ function ProgressRing({ resolved, total, pct, size = 76 }) {
 }
 
 const CITY_STATS = [
-  { icon: CheckCircle2, num: '2,400+', label: 'Issues resolved' },
-  { icon: Users, num: '180+', label: 'Communities active' },
-  { icon: MapPin, num: '12', label: 'Cities covered' },
-  { icon: Clock, num: '48hrs', label: 'Avg. resolution time' },
+  { icon: CheckCircle2, num: '10s', label: 'Live status refresh' },
+  { icon: Users, num: 'Map', label: 'Exact location pins' },
+  { icon: MapPin, num: 'Nagpur', label: 'Pilot city' },
+  { icon: Clock, num: '7 days', label: 'Expected resolution window' },
 ];
 
 const WARD_BREAKDOWN = [
@@ -198,7 +198,7 @@ const STORIES = [
   {
     title: 'Streetlight fixed in 3 days',
     location: 'MG Road, Ward 12',
-    desc: 'Reported broken streetlight, AI flagged it high-priority due to nearby school, resolved within 72 hours.',
+    desc: 'Reported broken streetlight, it was marked high-priority due to the nearby school, resolved within 72 hours.',
     category: 'Civic',
     icon: Building2,
     cardBg: 'from-amber-50 via-orange-50 to-amber-100/60',
@@ -218,7 +218,7 @@ const STORIES = [
     reportedBy: 'nandanvan_watch',
     timeline: [
       { label: 'Reported', detail: 'Streetlight outage flagged near school zone' },
-      { label: 'AI flagged high-priority', detail: 'Proximity to school triggered urgency boost' },
+      { label: 'Marked high-priority', detail: 'Proximity to school raised the urgency' },
       { label: 'Assigned to ward team', detail: 'Routed to Ward 12 electrical maintenance' },
       { label: 'Resolved', detail: 'Streetlight repaired and tested within 72 hours' },
     ],

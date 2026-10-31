@@ -141,7 +141,7 @@ export default function LandingPage() {
                             variants={fadeUp}
                             className="font-display font-black text-[34px] leading-[1.15] md:text-[48px] lg:text-[56px] mt-5 tracking-tight text-volt"
                         >
-                            <span className="gradient-text">One voice for every issue.</span>
+                            <span className="gradient-text">One voice for every issue.</span>{' '}
                             <br className="hidden sm:block" />
                             <span className="gradient-text">One platform for real change.</span>
                         </motion.h1>
@@ -175,10 +175,10 @@ export default function LandingPage() {
                     className="grid grid-cols-2 md:grid-cols-4 gap-y-4 text-center"
                 >
                     {[
-                        { icon: CheckCircle2, num: '2,400+', label: 'Issues resolved' },
-                        { icon: Users, num: '180+', label: 'Communities active' },
-                        { icon: MapPin, num: '12', label: 'Cities covered' },
-                        { icon: TrendingUp, num: '48hrs', label: 'Avg. resolution time' },
+                        { icon: CheckCircle2, num: '10s', label: 'Live status refresh' },
+                        { icon: Users, num: 'Map', label: 'Exact location pins' },
+                        { icon: MapPin, num: 'Nagpur', label: 'Pilot city' },
+                        { icon: TrendingUp, num: '7 days', label: 'Expected resolution window' },
                     ].map((s, i) => (
                         <motion.div
                             key={i}
@@ -373,7 +373,7 @@ export default function LandingPage() {
                 >
                     {[
                         { icon: MessageSquare, title: 'Report', desc: 'Describe the issue, drop a pin, add a photo.' },
-                        { icon: Sparkles, title: 'AI sorts it', desc: 'Category and urgency are detected automatically.' },
+                        { icon: Sparkles, title: 'Priority scored', desc: 'Every report gets a priority score from urgency, community backing and repeat reports.' },
                         { icon: Users, title: 'Community backs it', desc: 'Neighbours upvote and add context.' },
                         { icon: CheckCircle2, title: 'It gets resolved', desc: 'Track every status change until it\'s closed.' },
                     ].map((step, i) => (
@@ -451,8 +451,8 @@ export default function LandingPage() {
                 >
                     {[
                         {
-                            icon: Sparkles, title: 'AI-powered triage',
-                            desc: 'Every report is auto-categorised and prioritised the moment it\'s filed.',
+                            icon: Sparkles, title: 'Smart priority scoring',
+                            desc: 'Every report gets a live priority score from category, urgency, community backing and repeat reports.',
                             iconBg: 'bg-orange-100', iconColor: 'text-orange-500', numColor: 'text-orange-500/15',
                             cardBg: 'from-orange-50/70 to-white', border: 'border-orange-200', arrowBg: 'bg-orange-100 hover:bg-orange-500', arrowColor: 'text-orange-500',
                             dotColor: 'bg-orange-500', dotColorFaded: 'bg-orange-500/40',

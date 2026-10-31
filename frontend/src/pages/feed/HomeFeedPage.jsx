@@ -337,7 +337,7 @@ function FeedCard({ item, currentUserId, showToast, onToggleLike, onOpenComments
       <div className="px-4 pt-2 pb-4">
         <p className="text-[13.5px] font-semibold font-body text-text-dark">{likeCount} Backed</p>
         <p className="text-[13.5px] font-body text-text-dark mt-1 leading-relaxed">
-          <button onClick={() => navigate(`/profile/${item.user?.username}`)} className="font-semibold hover:underline">{item.user?.username}</button>{' '}
+          <button onClick={() => item.isAnonymous ? null : navigate(`/profile/${item.user?.username}`)} className="font-semibold hover:underline">{item.user?.username}</button>{' '}
           <span className="text-text-dark-muted">{item.caption}</span>
         </p>
         {commentCount !== null && (commentCount + (commentBump || 0)) > 0 && (

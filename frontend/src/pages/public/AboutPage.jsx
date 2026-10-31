@@ -350,8 +350,8 @@ export default function AboutPage() {
             {
               icon: Sparkles,
               num: '01',
-              title: 'It gets sorted instantly',
-              desc: 'AI reads every report and assigns the right category and urgency the moment it\'s filed — no manual triage delay.',
+              title: 'It gets prioritised',
+              desc: 'Every report gets a live priority score from category, urgency, community backing and repeat reports, so the most pressing issues rise to the top.',
             },
             {
               icon: Eye,
@@ -411,10 +411,10 @@ export default function AboutPage() {
           className="grid grid-cols-2 md:grid-cols-4"
         >
           {[
-            { icon: CheckCircle2, num: '2,400+', label: 'Issues resolved' },
-            { icon: Users, num: '180+', label: 'Communities active' },
-            { icon: MapPin, num: '12', label: 'Cities covered' },
-            { icon: TrendingUp, num: '48hrs', label: 'Avg. resolution time' },
+            { icon: CheckCircle2, num: '10s', label: 'Live status refresh' },
+            { icon: Users, num: 'Map', label: 'Exact location pins' },
+            { icon: MapPin, num: 'Nagpur', label: 'Pilot city' },
+            { icon: TrendingUp, num: '7 days', label: 'Expected resolution window' },
           ].map((s, i) => (
             <motion.div
               key={i}
